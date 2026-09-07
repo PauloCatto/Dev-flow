@@ -73,11 +73,11 @@ export default function DashboardPage() {
                 className="flex flex-col justify-between rounded-xl border border-zinc-200 bg-white p-5 transition-shadow hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
               >
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 leading-snug">
                       {project.name}
                     </h3>
-                    <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                    <span className="shrink-0 whitespace-nowrap rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                       {project.status}
                     </span>
                   </div>
