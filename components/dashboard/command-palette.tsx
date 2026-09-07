@@ -15,7 +15,6 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
 
-  // Efeito para fechar com a tecla Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -31,12 +30,10 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
   const normalizedQuery = query.toLowerCase().trim();
 
-  // Filtragem de Páginas do Sistema
   const filteredPages = DASHBOARD_NAV_ITEMS.filter((item) =>
     item.label.toLowerCase().includes(normalizedQuery)
   );
 
-  // Filtragem de Projetos
   const filteredProjects = MOCK_PROJECTS.filter(
     (p) =>
       p.name.toLowerCase().includes(normalizedQuery) ||
@@ -50,12 +47,9 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-150">
-      {/* Backdrop click para fechar */}
       <div className="fixed inset-0" onClick={onClose} />
 
-      {/* Caixa de Diálogo Spotlight */}
       <div className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 z-10 animate-in zoom-in-95 duration-150">
-        {/* Campo de Busca Superior */}
         <div className="flex items-center gap-3 border-b border-zinc-100 px-4 py-3 dark:border-zinc-800">
           <SearchIcon className="h-5 w-5 text-zinc-400 shrink-0" />
           <input
@@ -71,9 +65,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
           </kbd>
         </div>
 
-        {/* Lista de Resultados */}
         <div className="max-h-80 overflow-y-auto p-2 space-y-4">
-          {/* Grupo de Páginas */}
           {filteredPages.length > 0 && (
             <div>
               <p className="px-3 py-1.5 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
@@ -97,7 +89,6 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             </div>
           )}
 
-          {/* Grupo de Projetos */}
           {filteredProjects.length > 0 && (
             <div>
               <p className="px-3 py-1.5 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
@@ -126,7 +117,6 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             </div>
           )}
 
-          {/* Estado sem resultados */}
           {filteredPages.length === 0 && filteredProjects.length === 0 && (
             <div className="p-8 text-center text-xs text-zinc-500 dark:text-zinc-400">
               Nenhum resultado encontrado para &ldquo;{query}&rdquo;.
@@ -134,7 +124,6 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
           )}
         </div>
 
-        {/* Rodapé Informativo */}
         <div className="border-t border-zinc-100 bg-zinc-50/50 px-4 py-2 text-[11px] text-zinc-500 flex items-center justify-between dark:border-zinc-800 dark:bg-zinc-900/50">
           <span>Dica: Use para pular para qualquer rota instantaneamente</span>
           <span className="font-mono text-[10px]">DevFlow Spotlight</span>

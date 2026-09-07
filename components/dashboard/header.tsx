@@ -12,11 +12,10 @@ interface HeaderProps {
 export function Header({ title = "Visão Geral" }: HeaderProps) {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
 
-  // Escuta atalhos globais de teclado (Ctrl+K e Cmd+K)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault(); // Impede o navegador de focar a barra de pesquisa padrão
+        e.preventDefault();
         setIsPaletteOpen((prev) => !prev);
       }
     };
@@ -38,7 +37,6 @@ export function Header({ title = "Visão Geral" }: HeaderProps) {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Botão de Gatilho do Command Palette (Ctrl+K) */}
           <button
             type="button"
             onClick={() => setIsPaletteOpen(true)}
@@ -51,7 +49,6 @@ export function Header({ title = "Visão Geral" }: HeaderProps) {
             </kbd>
           </button>
 
-          {/* Botão de Criação Rápida */}
           <Link
             href="/projects"
             className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-emerald-500 transition-colors"
@@ -70,7 +67,6 @@ export function Header({ title = "Visão Geral" }: HeaderProps) {
         </div>
       </header>
 
-      {/* Spotlight Command Palette Modal */}
       <CommandPalette
         isOpen={isPaletteOpen}
         onClose={() => setIsPaletteOpen(false)}

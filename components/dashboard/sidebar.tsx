@@ -35,7 +35,6 @@ export function Sidebar() {
       }`}
     >
       <div className="space-y-6">
-        {/* Brand Header com Botão de Recolher/Expandir */}
         <div
           className={`flex items-center ${
             isCollapsed ? "flex-col gap-3 justify-center" : "justify-between px-2"
@@ -57,7 +56,6 @@ export function Sidebar() {
             )}
           </div>
 
-          {/* Botão de Toggle para abrir e fechar a barra lateral */}
           <button
             type="button"
             onClick={() => setIsCollapsed(!isCollapsed)}
@@ -68,7 +66,6 @@ export function Sidebar() {
           </button>
         </div>
 
-        {/* Navigation Items */}
         <nav className="space-y-1">
           {DASHBOARD_NAV_ITEMS.map((item) => {
             const isActive =
@@ -102,7 +99,6 @@ export function Sidebar() {
         </nav>
       </div>
 
-      {/* User profile footer */}
       <div className="border-t border-zinc-200 pt-3 dark:border-zinc-800">
         <div
           className={`flex items-center rounded-lg py-1.5 transition-colors cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-900 ${

@@ -25,7 +25,6 @@ export function CreateProjectModal({
 
   if (!isOpen) return null;
 
-  // Gera uma chave automática baseada no nome digitado (ex: "DevFlow Core" -> "DFC")
   const handleNameChange = (val: string) => {
     setName(val);
     if (!key || key.length <= 4) {
@@ -60,7 +59,6 @@ export function CreateProjectModal({
       status,
     });
 
-    // Limpa o formulário e fecha o modal
     setName("");
     setKey("");
     setDescription("");

@@ -6,7 +6,6 @@ import { MOCK_PROJECTS } from "@/lib/mock-data";
 export default function DashboardPage() {
   return (
     <div className="space-y-8">
-      {/* Top Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
@@ -19,7 +18,6 @@ export default function DashboardPage() {
         <StatusBadge version="0.1.0" status="Live Workspace" />
       </div>
 
-      {/* Metrics Row */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           label="Projetos Ativos"
@@ -47,7 +45,6 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Projects Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
@@ -86,7 +83,6 @@ export default function DashboardPage() {
                   </p>
                 </div>
 
-                {/* Progress bar */}
                 <div className="mt-5 space-y-2">
                   <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400">
                     <span>Progresso</span>

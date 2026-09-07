@@ -40,7 +40,6 @@ export function ProjectsList({ initialProjects }: ProjectsListProps) {
     setSearchQuery("");
   };
 
-  // Filtragem dos projetos com base no termo digitado
   const filteredProjects = projects.filter((p) => {
     const query = searchQuery.toLowerCase().trim();
     if (!query) return true;
@@ -54,7 +53,6 @@ export function ProjectsList({ initialProjects }: ProjectsListProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header com Título e Botão de Ação */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
@@ -74,11 +72,9 @@ export function ProjectsList({ initialProjects }: ProjectsListProps) {
         </button>
       </div>
 
-      {/* Barra de Busca com Feedback Visual de Status */}
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-4">
           <div className="relative w-full max-w-md">
-            {/* Ícone de busca na esquerda */}
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-400">
               <SearchIcon className="h-4 w-4" />
             </div>
@@ -91,7 +87,6 @@ export function ProjectsList({ initialProjects }: ProjectsListProps) {
               className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-9 pr-9 text-xs text-zinc-900 placeholder-zinc-400 shadow-2xs focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-500"
             />
 
-            {/* Ações na direita: Spinner de busca ou Botão de Limpar */}
             <div className="absolute inset-y-0 right-0 flex items-center pr-3">
               {isPending ? (
                 <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-zinc-300 border-t-emerald-600" />
@@ -108,7 +103,6 @@ export function ProjectsList({ initialProjects }: ProjectsListProps) {
             </div>
           </div>
 
-          {/* Contador Dinâmico de Resultados */}
           <div className="text-xs text-zinc-500 dark:text-zinc-400 font-medium whitespace-nowrap">
             {searchQuery ? (
               <span>
@@ -123,7 +117,6 @@ export function ProjectsList({ initialProjects }: ProjectsListProps) {
           </div>
         </div>
 
-        {/* Chip Informativo quando há filtro ativo */}
         {searchQuery && (
           <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
             <span>Filtro ativo:</span>
@@ -141,10 +134,8 @@ export function ProjectsList({ initialProjects }: ProjectsListProps) {
         )}
       </div>
 
-      {/* Projects Table & Empty State */}
       <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
         {filteredProjects.length === 0 ? (
-          /* Empty State Amigável com Ação de Reset */
           <div className="flex flex-col items-center justify-center p-12 text-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500">
               <SearchIcon className="h-6 w-6" />
@@ -232,7 +223,6 @@ export function ProjectsList({ initialProjects }: ProjectsListProps) {
         )}
       </div>
 
-      {/* Modal de Criação */}
       <CreateProjectModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

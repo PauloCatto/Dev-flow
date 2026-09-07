@@ -22,7 +22,6 @@ export default function KanbanPage() {
         </button>
       </div>
 
-      {/* Kanban Board Columns */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start">
         {KANBAN_COLUMNS.map((column) => {
           const tasksInColumn = MOCK_TASKS.filter(

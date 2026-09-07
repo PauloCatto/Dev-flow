@@ -22,7 +22,6 @@ export default function TasksPage() {
         </button>
       </div>
 
-      {/* Tasks List */}
       <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
         <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
           {MOCK_TASKS.map((task) => {

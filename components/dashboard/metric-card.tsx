@@ -8,7 +8,6 @@ export interface MetricCardProps {
 export function MetricCard({ label, value, change, trend }: MetricCardProps) {
   return (
     <div className="flex flex-col justify-between rounded-xl border border-zinc-200 bg-white p-4.5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
-      {/* Linha Superior: Rótulo e Badge de Tendência */}
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 truncate">
           {label}
@@ -24,7 +23,6 @@ export function MetricCard({ label, value, change, trend }: MetricCardProps) {
         </span>
       </div>
 
-      {/* Linha Inferior: Valor em destaque sem quebra indesejada */}
       <div className="mt-3">
         <p className="text-2xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 whitespace-nowrap">
           {value}
