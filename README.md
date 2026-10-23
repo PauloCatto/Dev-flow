@@ -52,26 +52,36 @@ devflow/
 
 - [x] **App Shell e Nested Layouts:** Navegação instantânea SPA com preservação de estado da Sidebar via Route Groups `(dashboard)`.
 - [x] **Detecção de Rota Ativa:** Destaque dinâmico de link ativo usando o hook `usePathname()` em Client Component.
-- [x] **Dashboard de Métricas:** KPIs de projetos ativos, tarefas concluídas, sprints e membros.
+- [x] **Dashboard de Métricas Dinâmico:** KPIs em tempo real de projetos ativos, tarefas concluídas e progresso calculados com base no estado global.
 - [x] **Gestão de Projetos:**
   - Tabela com informações de chave, líder, total de tarefas e última atualização.
   - Filtro e busca em tempo real por nome, chave ou responsável.
   - Criação de novo projeto via Modal acessível com foco em UX (geração automática de chave/slug).
-  - Gestão de estado reativo com `useState` e imutabilidade.
-- [x] **Quadro Kanban:** Visualização do fluxo de trabalho por colunas (*A Fazer*, *Em Andamento*, *Em Revisão*, *Concluído*).
-- [x] **Lista de Tarefas:** Organização de tarefas com badges de prioridade coloridos e status.
-- [x] **Configurações:** Edição de perfil do workspace e slug da organização.
+  - Exclusão de projetos e contadores automáticos de tarefas.
+- [x] **Quadro Kanban Interativo (Drag and Drop):**
+  - Arraste e solte cartões nativamente (HTML5 Drag and Drop) entre colunas (*A Fazer*, *Em Andamento*, *Em Revisão*, *Concluído*).
+  - Destaque visual dinâmico de colunas de destino e animações de soltura.
+  - Seletor rápido de coluna diretamente no cartão para acessibilidade em dispositivos móveis e teclado.
+  - Filtros instantâneos por projeto, prioridade e busca por texto.
+- [x] **Gestão de Tarefas (`CreateTaskModal` & `/tasks`):**
+  - Modal unificado para criar tarefas atribuídas a projetos, com prioridade, responsável e prazos.
+  - Lista interativa com marcação de conclusão (checkbox) e exclusão.
+- [x] **Command Palette Global (`Ctrl+K` / `Cmd+K`):**
+  - Modal estilo Spotlight com busca instantânea entre páginas, projetos cadastrados e ações rápidas (criar tarefa, alternar tema).
+- [x] **Dark Mode Nativo:**
+  - Alternância instantânea entre modo Claro, Escuro e Automático (Sistema).
+  - Configuração nativa com `@custom-variant dark` no Tailwind CSS v4 e persistência em `localStorage`.
+- [x] **Estado Centralizado e Persistência:**
+  - `DevFlowProvider` com Context API unificando projetos, tarefas e tema, com sincronização em `localStorage`.
 
 ---
 
 ## 🗺️ Roadmap de Evolução
 
 - [ ] **Autenticação e Permissões:** Login, sessões e proteção de rotas com Auth.js / NextAuth.
-- [ ] **Banco de Dados Relacional:** Conexão com PostgreSQL via Prisma ORM.
+- [ ] **Banco de Dados Relacional:** Conexão com PostgreSQL via Prisma ORM / Drizzle.
 - [ ] **Server Actions & APIs:** Mutações no servidor com validação de esquema (Zod).
-- [ ] **Interatividade Kanban:** Drag-and-drop de cartões entre colunas com atualização otimista.
-- [ ] **Dark Mode:** Alternância de tema claro/escuro nativo.
-- [ ] **Testes Automatizados:** Testes unitários, de componentes e E2E.
+- [ ] **Testes Automatizados:** Testes unitários, de componentes e E2E (Vitest / Playwright).
 - [ ] **Deploy e Produção:** Deploy automatizado e otimizações de SEO / Performance.
 
 ---
@@ -105,3 +115,6 @@ Para detalhes aprofundados sobre decisões de arquitetura, comparações técnic
 * [`docs/01-fundamentos-e-arquitetura.md`](./docs/01-fundamentos-e-arquitetura.md)
 * [`docs/02-app-shell-e-route-groups.md`](./docs/02-app-shell-e-route-groups.md)
 * [`docs/03-estado-formularios-e-modais.md`](./docs/03-estado-formularios-e-modais.md)
+* [`docs/04-hooks-useeffect-e-command-palette.md`](./docs/04-hooks-useeffect-e-command-palette.md)
+* [`docs/05-kanban-drag-and-drop-e-context-api.md`](./docs/05-kanban-drag-and-drop-e-context-api.md)
+
