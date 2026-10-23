@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DASHBOARD_NAV_ITEMS } from "@/config/navigation";
-import { MOCK_PROJECTS } from "@/lib/mock-data";
-import { SearchIcon } from "@/components/icons";
+import { SearchIcon, PlusIcon, SunIcon, MoonIcon } from "@/components/icons";
+import { useDevFlow } from "@/context/devflow-context";
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -13,6 +13,7 @@ interface CommandPaletteProps {
 
 export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const router = useRouter();
+  const { projects, openCreateTaskModal, toggleTheme, resolvedTheme } = useDevFlow();
   const [query, setQuery] = useState("");
 
   useEffect(() => {
@@ -34,11 +35,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     item.label.toLowerCase().includes(normalizedQuery)
   );
 
-  const filteredProjects = MOCK_PROJECTS.filter(
+  const filteredProjects = projects.filter(
     (p) =>
       p.name.toLowerCase().includes(normalizedQuery) ||
       p.key.toLowerCase().includes(normalizedQuery)
   );
+
 
   const handleNavigate = (href: string) => {
     router.push(href);
@@ -66,6 +68,44 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         </div>
 
         <div className="max-h-80 overflow-y-auto p-2 space-y-4">
+          {/* Quick Actions */}
+          <div>
+            <p className="px-3 py-1.5 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+              Ações Rápidas
+            </p>
+            <div className="space-y-0.5">
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  openCreateTaskModal("todo");
+                }}
+                className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-zinc-700 hover:bg-emerald-50 hover:text-emerald-700 dark:text-zinc-300 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-300 transition-colors text-left cursor-pointer"
+              >
+                <PlusIcon className="h-4 w-4 text-emerald-600" />
+                <span className="font-medium">Criar Nova Tarefa</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  toggleTheme();
+                  onClose();
+                }}
+                className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-colors text-left cursor-pointer"
+              >
+                {resolvedTheme === "dark" ? (
+                  <SunIcon className="h-4 w-4 text-amber-500" />
+                ) : (
+                  <MoonIcon className="h-4 w-4 text-zinc-500" />
+                )}
+                <span className="font-medium">
+                  Alternar Tema ({resolvedTheme === "dark" ? "Ativar Modo Claro" : "Ativar Modo Escuro"})
+                </span>
+              </button>
+            </div>
+          </div>
+
           {filteredPages.length > 0 && (
             <div>
               <p className="px-3 py-1.5 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
