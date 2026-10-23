@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { CommandPalette } from "@/components/dashboard/command-palette";
-import { SearchIcon } from "@/components/icons";
+import { SearchIcon, SunIcon, MoonIcon, PlusIcon } from "@/components/icons";
+import { useDevFlow } from "@/context/devflow-context";
 
 interface HeaderProps {
   title?: string;
@@ -11,6 +12,7 @@ interface HeaderProps {
 
 export function Header({ title = "Visão Geral" }: HeaderProps) {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const { resolvedTheme, toggleTheme, openCreateTaskModal } = useDevFlow();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -26,7 +28,7 @@ export function Header({ title = "Visão Geral" }: HeaderProps) {
 
   return (
     <>
-      <header className="h-16 border-b border-zinc-200 bg-white px-6 flex items-center justify-between dark:border-zinc-800 dark:bg-zinc-900/50 backdrop-blur-sm">
+      <header className="h-16 border-b border-zinc-200 bg-white/80 px-6 flex items-center justify-between dark:border-zinc-800 dark:bg-zinc-950/80 backdrop-blur-md sticky top-0 z-30">
         <div className="flex items-center gap-3">
           <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             {title}
@@ -36,11 +38,12 @@ export function Header({ title = "Visão Geral" }: HeaderProps) {
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          {/* Global Search / Command Palette Trigger */}
           <button
             type="button"
             onClick={() => setIsPaletteOpen(true)}
-            className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-500 hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-750 transition-colors cursor-pointer"
+            className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-500 hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
           >
             <SearchIcon className="h-3.5 w-3.5 text-zinc-400" />
             <span className="hidden sm:inline">Buscar páginas, projetos...</span>
@@ -49,19 +52,36 @@ export function Header({ title = "Visão Geral" }: HeaderProps) {
             </kbd>
           </button>
 
+          {/* Theme Switcher Toggle */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            title={`Alternar para tema ${resolvedTheme === "dark" ? "claro" : "escuro"}`}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+          >
+            {resolvedTheme === "dark" ? (
+              <SunIcon className="h-4 w-4 text-amber-400" />
+            ) : (
+              <MoonIcon className="h-4 w-4 text-zinc-600" />
+            )}
+          </button>
+
+          {/* Quick Add Task */}
+          <button
+            type="button"
+            onClick={() => openCreateTaskModal("todo")}
+            className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-2xs hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+          >
+            <PlusIcon className="h-3.5 w-3.5" />
+            Tarefa
+          </button>
+
+          {/* New Project Link */}
           <Link
             href="/projects"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-emerald-500 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-500 transition-colors cursor-pointer"
           >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
+            <PlusIcon className="h-3.5 w-3.5" />
             Novo Projeto
           </Link>
         </div>
@@ -74,3 +94,4 @@ export function Header({ title = "Visão Geral" }: HeaderProps) {
     </>
   );
 }
+

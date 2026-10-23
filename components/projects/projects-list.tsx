@@ -4,14 +4,15 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Project } from "@/types";
 import { CreateProjectModal } from "@/components/projects/create-project-modal";
-import { SearchIcon, CloseIcon } from "@/components/icons";
+import { SearchIcon, CloseIcon, TrashIcon } from "@/components/icons";
+import { useDevFlow } from "@/context/devflow-context";
 
 interface ProjectsListProps {
-  initialProjects: Project[];
+  initialProjects?: Project[];
 }
 
 export function ProjectsList({ initialProjects }: ProjectsListProps) {
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const { projects, addProject, deleteProject } = useDevFlow();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -19,16 +20,9 @@ export function ProjectsList({ initialProjects }: ProjectsListProps) {
   const handleCreateProject = (
     newProjectData: Omit<Project, "id" | "tasksCount" | "completedTasks" | "updatedAt">
   ) => {
-    const newProject: Project = {
-      ...newProjectData,
-      id: String(Date.now()),
-      tasksCount: 0,
-      completedTasks: 0,
-      updatedAt: "Agora mesmo",
-    };
-
-    setProjects((prev) => [newProject, ...prev]);
+    addProject(newProjectData);
   };
+
 
   const handleSearchChange = (value: string) => {
     startTransition(() => {
@@ -209,12 +203,22 @@ export function ProjectsList({ initialProjects }: ProjectsListProps) {
                     {p.updatedAt}
                   </td>
                   <td className="px-5 py-4 text-right">
-                    <Link
-                      href={`/kanban?project=${p.id}`}
-                      className="text-xs font-semibold text-emerald-600 hover:text-emerald-500 dark:text-emerald-400"
-                    >
-                      Abrir Kanban →
-                    </Link>
+                    <div className="flex items-center justify-end gap-3">
+                      <Link
+                        href={`/kanban?project=${p.id}`}
+                        className="text-xs font-semibold text-emerald-600 hover:text-emerald-500 dark:text-emerald-400"
+                      >
+                        Abrir Kanban →
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => deleteProject(p.id)}
+                        title="Excluir projeto"
+                        className="text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1 rounded"
+                      >
+                        <TrashIcon className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
