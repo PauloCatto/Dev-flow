@@ -10,8 +10,11 @@ export function CreateTaskModal() {
   const {
     isTaskModalOpen,
     defaultTaskStatus,
+    defaultTaskProjectId,
+    editingTask,
     closeCreateTaskModal,
     addTask,
+    updateTask,
     projects,
   } = useDevFlow();
 
@@ -24,18 +27,40 @@ export function CreateTaskModal() {
   const [dueDate, setDueDate] = useState("Em 3 dias");
   const [error, setError] = useState("");
 
-  // Sync initial status when modal opens
   useEffect(() => {
     if (isTaskModalOpen) {
-      setStatus(defaultTaskStatus || "todo");
-      if (projects.length > 0 && !projectId) {
-        setProjectId(projects[0].id);
+      if (editingTask) {
+        setTitle(editingTask.title);
+        setDescription(editingTask.description || "");
+        setProjectId(editingTask.projectId);
+        setStatus(editingTask.status);
+        setPriority(editingTask.priority);
+        setAssigneeName(editingTask.assignee.name);
+        setDueDate(editingTask.dueDate || "Sem prazo");
+      } else {
+        setTitle("");
+        setDescription("");
+        setStatus(defaultTaskStatus || "todo");
+        setPriority("media");
+        setAssigneeName("Paulo Developer");
+        setDueDate("Em 3 dias");
+        if (defaultTaskProjectId) {
+          setProjectId(defaultTaskProjectId);
+        } else if (projects.length > 0 && !projectId) {
+          setProjectId(projects[0].id);
+        }
       }
       setError("");
     }
-  }, [isTaskModalOpen, defaultTaskStatus, projects, projectId]);
+  }, [
+    isTaskModalOpen,
+    editingTask,
+    defaultTaskStatus,
+    defaultTaskProjectId,
+    projects,
+    projectId,
+  ]);
 
-  // Handle ESC key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isTaskModalOpen) {
@@ -48,6 +73,8 @@ export function CreateTaskModal() {
 
   if (!isTaskModalOpen) return null;
 
+  const isEditing = Boolean(editingTask);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -56,19 +83,34 @@ export function CreateTaskModal() {
       return;
     }
 
-    const selectedProjectId = projectId || (projects.length > 0 ? projects[0].id : "1");
+    const selectedProjectId =
+      projectId || (projects.length > 0 ? projects[0].id : "1");
 
-    addTask({
-      title: title.trim(),
-      description: description.trim() || undefined,
-      projectId: selectedProjectId,
-      status,
-      priority,
-      assignee: {
-        name: assigneeName.trim() || "Paulo Developer",
-      },
-      dueDate: dueDate.trim() || "Sem prazo",
-    });
+    if (editingTask) {
+      updateTask(editingTask.id, {
+        title: title.trim(),
+        description: description.trim() || undefined,
+        projectId: selectedProjectId,
+        status,
+        priority,
+        assignee: {
+          name: assigneeName.trim() || "Paulo Developer",
+        },
+        dueDate: dueDate.trim() || "Sem prazo",
+      });
+    } else {
+      addTask({
+        title: title.trim(),
+        description: description.trim() || undefined,
+        projectId: selectedProjectId,
+        status,
+        priority,
+        assignee: {
+          name: assigneeName.trim() || "Paulo Developer",
+        },
+        dueDate: dueDate.trim() || "Sem prazo",
+      });
+    }
 
     setTitle("");
     setDescription("");
@@ -82,10 +124,12 @@ export function CreateTaskModal() {
         <div className="flex items-center justify-between pb-4 border-b border-zinc-100 dark:border-zinc-800">
           <div>
             <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-              Criar Nova Tarefa
+              {isEditing ? "Editar Tarefa" : "Criar Nova Tarefa"}
             </h2>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Adicione uma tarefa ao fluxo de trabalho e atribua a um responsável.
+              {isEditing
+                ? "Atualize os dados, status ou responsável desta tarefa."
+                : "Adicione uma tarefa ao fluxo de trabalho e atribua a um responsável."}
             </p>
           </div>
           <button
@@ -222,7 +266,7 @@ export function CreateTaskModal() {
               type="submit"
               className="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-emerald-500 transition-colors cursor-pointer"
             >
-              Criar Tarefa
+              {isEditing ? "Salvar Alterações" : "Criar Tarefa"}
             </button>
           </div>
         </form>

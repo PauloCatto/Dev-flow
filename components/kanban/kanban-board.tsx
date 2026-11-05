@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
+import Link from "next/link";
 import { useDevFlow } from "@/context/devflow-context";
 import { KANBAN_COLUMNS, PRIORITY_BADGES } from "@/lib/constants";
-import { Task, TaskPriority, TaskStatus } from "@/types";
+import { TaskStatus } from "@/types";
 import {
   PlusIcon,
   SearchIcon,
   TrashIcon,
   GripVerticalIcon,
   CloseIcon,
+  EditIcon,
 } from "@/components/icons";
 
 export function KanbanBoard() {
@@ -19,18 +21,25 @@ export function KanbanBoard() {
     updateTaskStatus,
     deleteTask,
     openCreateTaskModal,
+    openEditTaskModal,
   } = useDevFlow();
 
   const [dragOverColumn, setDragOverColumn] = useState<TaskStatus | null>(null);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
 
-  // Filters
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProjectId, setSelectedProjectId] = useState<string>("all");
   const [selectedPriority, setSelectedPriority] = useState<string>("all");
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
-  // Drag Handlers
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const projectParam = params.get("project");
+    if (projectParam) {
+      setSelectedProjectId(projectParam);
+    }
+  }, []);
+
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
     e.dataTransfer.setData("text/plain", taskId);
     e.dataTransfer.effectAllowed = "move";
@@ -52,7 +61,6 @@ export function KanbanBoard() {
 
   const handleDragLeave = (e: React.DragEvent, columnId: TaskStatus) => {
     e.preventDefault();
-    // Only reset if actually leaving the container
     const related = e.relatedTarget as Node | null;
     if (!e.currentTarget.contains(related)) {
       if (dragOverColumn === columnId) {
@@ -71,7 +79,6 @@ export function KanbanBoard() {
     setDraggedTaskId(null);
   };
 
-  // Filter tasks
   const filteredTasks = tasks.filter((task) => {
     const matchesQuery =
       !searchQuery ||
@@ -87,9 +94,11 @@ export function KanbanBoard() {
     return matchesQuery && matchesProject && matchesPriority;
   });
 
+  const activeProjectId =
+    selectedProjectId !== "all" ? selectedProjectId : undefined;
+
   return (
     <div className="space-y-6">
-      {/* Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
@@ -102,7 +111,7 @@ export function KanbanBoard() {
 
         <button
           type="button"
-          onClick={() => openCreateTaskModal("todo")}
+          onClick={() => openCreateTaskModal("todo", activeProjectId)}
           className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-emerald-500 transition-colors cursor-pointer"
         >
           <PlusIcon className="h-4 w-4" />
@@ -110,7 +119,6 @@ export function KanbanBoard() {
         </button>
       </div>
 
-      {/* Filter Bar */}
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900">
         <div className="relative flex-1 min-w-[200px]">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-400">
@@ -137,7 +145,6 @@ export function KanbanBoard() {
           )}
         </div>
 
-        {/* Project Selector */}
         <select
           value={selectedProjectId}
           onChange={(e) => setSelectedProjectId(e.target.value)}
@@ -151,7 +158,6 @@ export function KanbanBoard() {
           ))}
         </select>
 
-        {/* Priority Selector */}
         <select
           value={selectedPriority}
           onChange={(e) => setSelectedPriority(e.target.value)}
@@ -179,7 +185,6 @@ export function KanbanBoard() {
         )}
       </div>
 
-      {/* Kanban Board Columns */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start">
         {KANBAN_COLUMNS.map((column) => {
           const tasksInColumn = filteredTasks.filter(
@@ -199,7 +204,6 @@ export function KanbanBoard() {
                   : "border-zinc-200 bg-zinc-50/80 dark:border-zinc-800/80 dark:bg-zinc-900/60"
               }`}
             >
-              {/* Column Header */}
               <div className="flex items-center justify-between mb-3 pb-2 border-b border-zinc-200/60 dark:border-zinc-800">
                 <div className="flex items-center gap-2">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
@@ -212,7 +216,7 @@ export function KanbanBoard() {
 
                 <button
                   type="button"
-                  onClick={() => openCreateTaskModal(column.id)}
+                  onClick={() => openCreateTaskModal(column.id, activeProjectId)}
                   title={`Adicionar cartão em ${column.title}`}
                   className="rounded-md p-1 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200 transition-colors cursor-pointer"
                 >
@@ -220,7 +224,6 @@ export function KanbanBoard() {
                 </button>
               </div>
 
-              {/* Tasks List */}
               <div className="space-y-3 flex-1">
                 {tasksInColumn.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-32 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800 text-center p-4">
@@ -229,7 +232,7 @@ export function KanbanBoard() {
                     </p>
                     <button
                       type="button"
-                      onClick={() => openCreateTaskModal(column.id)}
+                      onClick={() => openCreateTaskModal(column.id, activeProjectId)}
                       className="mt-1 text-xs font-medium text-emerald-600 hover:underline dark:text-emerald-400 cursor-pointer"
                     >
                       + Criar cartão
@@ -253,18 +256,34 @@ export function KanbanBoard() {
                             : "border-zinc-200 hover:border-zinc-300 hover:shadow-xs dark:border-zinc-800 dark:hover:border-zinc-700"
                         }`}
                       >
-                        {/* Top: Project Key & Drag Indicator */}
                         <div className="flex items-center justify-between mb-2">
-                          <span className="font-mono text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase">
-                            {project ? project.key : "DEV"}
-                          </span>
+                          {project ? (
+                            <Link
+                              href={`/projects/${project.id}`}
+                              className="font-mono text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase hover:text-emerald-600 dark:hover:text-emerald-400"
+                            >
+                              {project.key}
+                            </Link>
+                          ) : (
+                            <span className="font-mono text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase">
+                              DEV
+                            </span>
+                          )}
 
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                               type="button"
+                              onClick={() => openEditTaskModal(task)}
+                              title="Editar cartão"
+                              className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200 transition-colors cursor-pointer"
+                            >
+                              <EditIcon className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => deleteTask(task.id)}
                               title="Excluir cartão"
-                              className="rounded p-1 text-zinc-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400 transition-colors"
+                              className="rounded p-1 text-zinc-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400 transition-colors cursor-pointer"
                             >
                               <TrashIcon className="h-3.5 w-3.5" />
                             </button>
@@ -274,7 +293,6 @@ export function KanbanBoard() {
                           </div>
                         </div>
 
-                        {/* Title */}
                         <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 leading-snug">
                           {task.title}
                         </p>
@@ -285,7 +303,6 @@ export function KanbanBoard() {
                           </p>
                         )}
 
-                        {/* Footer: Priority & Assignee & Quick Move */}
                         <div className="mt-3 flex items-center justify-between gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800/60 text-[11px]">
                           <span
                             className={`rounded px-1.5 py-0.5 text-[10px] font-medium border ${badge.className}`}
@@ -294,7 +311,6 @@ export function KanbanBoard() {
                           </span>
 
                           <div className="flex items-center gap-1.5">
-                            {/* Accessible Column Mover */}
                             <select
                               value={task.status}
                               onChange={(e) =>

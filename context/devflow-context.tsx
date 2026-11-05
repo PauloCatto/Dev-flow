@@ -14,30 +14,37 @@ import { MOCK_PROJECTS, MOCK_TASKS } from "@/lib/mock-data";
 type ThemeMode = "light" | "dark" | "system";
 
 interface DevFlowContextType {
-  // Theme
   theme: ThemeMode;
   resolvedTheme: "light" | "dark";
   setTheme: (theme: ThemeMode) => void;
   toggleTheme: () => void;
 
-  // Projects
   projects: Project[];
   addProject: (
     data: Omit<Project, "id" | "tasksCount" | "completedTasks" | "updatedAt">
   ) => Project;
+  updateProject: (
+    id: string,
+    data: Partial<Omit<Project, "id" | "tasksCount" | "completedTasks" | "updatedAt">>
+  ) => void;
   deleteProject: (id: string) => void;
 
-  // Tasks
   tasks: Task[];
   addTask: (data: Omit<Task, "id" | "createdAt">) => Task;
+  updateTask: (
+    taskId: string,
+    data: Partial<Omit<Task, "id" | "createdAt">>
+  ) => void;
   updateTaskStatus: (taskId: string, newStatus: TaskStatus) => void;
   toggleTaskDone: (taskId: string) => void;
   deleteTask: (taskId: string) => void;
 
-  // Modals
   isTaskModalOpen: boolean;
   defaultTaskStatus: TaskStatus;
-  openCreateTaskModal: (status?: TaskStatus) => void;
+  defaultTaskProjectId?: string;
+  editingTask: Task | null;
+  openCreateTaskModal: (status?: TaskStatus, projectId?: string) => void;
+  openEditTaskModal: (task: Task) => void;
   closeCreateTaskModal: () => void;
 
   isProjectModalOpen: boolean;
@@ -51,19 +58,28 @@ const STORAGE_KEY_PROJECTS = "devflow_projects_v1";
 const STORAGE_KEY_TASKS = "devflow_tasks_v1";
 const STORAGE_KEY_THEME = "devflow_theme_v1";
 
+function persistToStorage(key: string, value: unknown) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    return;
+  }
+}
+
 export function DevFlowProvider({ children }: { children: React.ReactNode }) {
-  // Initial state seeds
   const [projects, setProjects] = useState<Project[]>(MOCK_PROJECTS);
   const [tasks, setTasks] = useState<Task[]>(MOCK_TASKS);
   const [theme, setThemeState] = useState<ThemeMode>("light");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
 
-  // Modals
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [defaultTaskStatus, setDefaultTaskStatus] = useState<TaskStatus>("todo");
+  const [defaultTaskProjectId, setDefaultTaskProjectId] = useState<string | undefined>(
+    undefined
+  );
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
 
-  // Hydrate from localStorage on client mount
   useEffect(() => {
     try {
       const savedProjects = localStorage.getItem(STORAGE_KEY_PROJECTS);
@@ -76,14 +92,14 @@ export function DevFlowProvider({ children }: { children: React.ReactNode }) {
         setTasks(JSON.parse(savedTasks));
       }
 
-      const savedTheme = (localStorage.getItem(STORAGE_KEY_THEME) as ThemeMode) || "light";
+      const savedTheme =
+        (localStorage.getItem(STORAGE_KEY_THEME) as ThemeMode) || "light";
       setThemeState(savedTheme);
     } catch {
-      // Fallback silently if storage is disabled/inaccessible
+      return;
     }
   }, []);
 
-  // Sync theme changes with DOM
   useEffect(() => {
     const root = document.documentElement;
     let effectiveDark = false;
@@ -106,29 +122,9 @@ export function DevFlowProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.setItem(STORAGE_KEY_THEME, theme);
     } catch {
-      // Ignore
+      return;
     }
   }, [theme]);
-
-  // Persist projects
-  const saveProjects = useCallback((newProjects: Project[]) => {
-    setProjects(newProjects);
-    try {
-      localStorage.setItem(STORAGE_KEY_PROJECTS, JSON.stringify(newProjects));
-    } catch {
-      // Ignore
-    }
-  }, []);
-
-  // Persist tasks
-  const saveTasks = useCallback((newTasks: Task[]) => {
-    setTasks(newTasks);
-    try {
-      localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(newTasks));
-    } catch {
-      // Ignore
-    }
-  }, []);
 
   const setTheme = useCallback((newTheme: ThemeMode) => {
     setThemeState(newTheme);
@@ -138,9 +134,10 @@ export function DevFlowProvider({ children }: { children: React.ReactNode }) {
     setThemeState((current) => (current === "dark" ? "light" : "dark"));
   }, []);
 
-  // Add Project
   const addProject = useCallback(
-    (data: Omit<Project, "id" | "tasksCount" | "completedTasks" | "updatedAt">): Project => {
+    (
+      data: Omit<Project, "id" | "tasksCount" | "completedTasks" | "updatedAt">
+    ): Project => {
       const newProject: Project = {
         ...data,
         id: `proj-${Date.now()}`,
@@ -151,11 +148,7 @@ export function DevFlowProvider({ children }: { children: React.ReactNode }) {
 
       setProjects((prev) => {
         const updated = [newProject, ...prev];
-        try {
-          localStorage.setItem(STORAGE_KEY_PROJECTS, JSON.stringify(updated));
-        } catch {
-          // Ignore
-        }
+        persistToStorage(STORAGE_KEY_PROJECTS, updated);
         return updated;
       });
 
@@ -164,126 +157,215 @@ export function DevFlowProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
-  // Delete Project
-  const deleteProject = useCallback((id: string) => {
-    setProjects((prev) => {
-      const updated = prev.filter((p) => p.id !== id);
-      try {
-        localStorage.setItem(STORAGE_KEY_PROJECTS, JSON.stringify(updated));
-      } catch {
-        // Ignore
-      }
-      return updated;
-    });
-  }, []);
-
-  // Add Task
-  const addTask = useCallback(
-    (data: Omit<Task, "id" | "createdAt">): Task => {
-      const newTask: Task = {
-        ...data,
-        id: `task-${Date.now()}`,
-        createdAt: "Hoje",
-      };
-
-      setTasks((prev) => {
-        const updated = [newTask, ...prev];
-        try {
-          localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(updated));
-        } catch {
-          // Ignore
-        }
+  const updateProject = useCallback(
+    (
+      id: string,
+      data: Partial<Omit<Project, "id" | "tasksCount" | "completedTasks" | "updatedAt">>
+    ) => {
+      setProjects((prev) => {
+        const updated = prev.map((p) =>
+          p.id === id
+            ? {
+                ...p,
+                ...data,
+                updatedAt: "Agora mesmo",
+              }
+            : p
+        );
+        persistToStorage(STORAGE_KEY_PROJECTS, updated);
         return updated;
       });
-
-      // Update project counts
-      setProjects((prev) =>
-        prev.map((p) => {
-          if (p.id === data.projectId) {
-            return {
-              ...p,
-              tasksCount: p.tasksCount + 1,
-              completedTasks:
-                data.status === "done" ? p.completedTasks + 1 : p.completedTasks,
-              updatedAt: "Agora mesmo",
-            };
-          }
-          return p;
-        })
-      );
-
-      return newTask;
     },
     []
   );
 
-  // Move / Update Task Status
-  const updateTaskStatus = useCallback((taskId: string, newStatus: TaskStatus) => {
+  const deleteProject = useCallback((id: string) => {
+    setProjects((prev) => {
+      const updated = prev.filter((p) => p.id !== id);
+      persistToStorage(STORAGE_KEY_PROJECTS, updated);
+      return updated;
+    });
+
     setTasks((prev) => {
-      let targetProjectId = "";
-      let wasDone = false;
-      const isNowDone = newStatus === "done";
+      const updated = prev.filter((t) => t.projectId !== id);
+      persistToStorage(STORAGE_KEY_TASKS, updated);
+      return updated;
+    });
+  }, []);
 
-      const updated = prev.map((t) => {
-        if (t.id === taskId) {
-          targetProjectId = t.projectId;
-          wasDone = t.status === "done";
-          return { ...t, status: newStatus };
+  const addTask = useCallback((data: Omit<Task, "id" | "createdAt">): Task => {
+    const newTask: Task = {
+      ...data,
+      id: `task-${Date.now()}`,
+      createdAt: "Hoje",
+    };
+
+    setTasks((prev) => {
+      const updated = [newTask, ...prev];
+      persistToStorage(STORAGE_KEY_TASKS, updated);
+      return updated;
+    });
+
+    setProjects((prev) => {
+      const updated = prev.map((p) => {
+        if (p.id === data.projectId) {
+          return {
+            ...p,
+            tasksCount: p.tasksCount + 1,
+            completedTasks:
+              data.status === "done" ? p.completedTasks + 1 : p.completedTasks,
+            updatedAt: "Agora mesmo",
+          };
         }
-        return t;
+        return p;
       });
+      persistToStorage(STORAGE_KEY_PROJECTS, updated);
+      return updated;
+    });
 
-      try {
-        localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(updated));
-      } catch {
-        // Ignore
-      }
+    return newTask;
+  }, []);
 
-      // Sync project completedTasks count if status changed to/from done
-      if (targetProjectId && wasDone !== isNowDone) {
-        setProjects((projList) =>
-          projList.map((p) => {
-            if (p.id === targetProjectId) {
-              const diff = isNowDone ? 1 : -1;
+  const updateTask = useCallback(
+    (taskId: string, data: Partial<Omit<Task, "id" | "createdAt">>) => {
+      setTasks((prev) => {
+        const existing = prev.find((t) => t.id === taskId);
+        if (!existing) return prev;
+
+        const nextTask: Task = { ...existing, ...data };
+        const updated = prev.map((t) => (t.id === taskId ? nextTask : t));
+        persistToStorage(STORAGE_KEY_TASKS, updated);
+
+        const oldProjectId = existing.projectId;
+        const newProjectId = nextTask.projectId;
+        const wasDone = existing.status === "done";
+        const isNowDone = nextTask.status === "done";
+
+        setProjects((projList) => {
+          const updatedProjects = projList.map((p) => {
+            if (oldProjectId === newProjectId && p.id === oldProjectId) {
+              const diff = isNowDone === wasDone ? 0 : isNowDone ? 1 : -1;
               return {
                 ...p,
                 completedTasks: Math.max(0, p.completedTasks + diff),
                 updatedAt: "Agora mesmo",
               };
             }
+            if (p.id === oldProjectId) {
+              return {
+                ...p,
+                tasksCount: Math.max(0, p.tasksCount - 1),
+                completedTasks: wasDone
+                  ? Math.max(0, p.completedTasks - 1)
+                  : p.completedTasks,
+                updatedAt: "Agora mesmo",
+              };
+            }
+            if (p.id === newProjectId) {
+              return {
+                ...p,
+                tasksCount: p.tasksCount + 1,
+                completedTasks: isNowDone
+                  ? p.completedTasks + 1
+                  : p.completedTasks,
+                updatedAt: "Agora mesmo",
+              };
+            }
             return p;
-          })
-        );
-      }
+          });
+          persistToStorage(STORAGE_KEY_PROJECTS, updatedProjects);
+          return updatedProjects;
+        });
 
-      return updated;
-    });
-  }, []);
+        return updated;
+      });
+    },
+    []
+  );
 
-  // Toggle Task Done (Checkbox)
+  const updateTaskStatus = useCallback(
+    (taskId: string, newStatus: TaskStatus) => {
+      setTasks((prev) => {
+        let targetProjectId = "";
+        let wasDone = false;
+        const isNowDone = newStatus === "done";
+
+        const updated = prev.map((t) => {
+          if (t.id === taskId) {
+            targetProjectId = t.projectId;
+            wasDone = t.status === "done";
+            return { ...t, status: newStatus };
+          }
+          return t;
+        });
+
+        persistToStorage(STORAGE_KEY_TASKS, updated);
+
+        if (targetProjectId && wasDone !== isNowDone) {
+          setProjects((projList) => {
+            const updatedProjects = projList.map((p) => {
+              if (p.id === targetProjectId) {
+                const diff = isNowDone ? 1 : -1;
+                return {
+                  ...p,
+                  completedTasks: Math.max(0, p.completedTasks + diff),
+                  updatedAt: "Agora mesmo",
+                };
+              }
+              return p;
+            });
+            persistToStorage(STORAGE_KEY_PROJECTS, updatedProjects);
+            return updatedProjects;
+          });
+        }
+
+        return updated;
+      });
+    },
+    []
+  );
+
   const toggleTaskDone = useCallback((taskId: string) => {
     setTasks((prev) => {
       const current = prev.find((t) => t.id === taskId);
       if (!current) return prev;
       const nextStatus: TaskStatus = current.status === "done" ? "todo" : "done";
-      return prev.map((t) => (t.id === taskId ? { ...t, status: nextStatus } : t));
+      const isNowDone = nextStatus === "done";
+
+      const updated = prev.map((t) =>
+        t.id === taskId ? { ...t, status: nextStatus } : t
+      );
+      persistToStorage(STORAGE_KEY_TASKS, updated);
+
+      setProjects((projList) => {
+        const updatedProjects = projList.map((p) => {
+          if (p.id === current.projectId) {
+            const diff = isNowDone ? 1 : -1;
+            return {
+              ...p,
+              completedTasks: Math.max(0, p.completedTasks + diff),
+              updatedAt: "Agora mesmo",
+            };
+          }
+          return p;
+        });
+        persistToStorage(STORAGE_KEY_PROJECTS, updatedProjects);
+        return updatedProjects;
+      });
+
+      return updated;
     });
   }, []);
 
-  // Delete Task
   const deleteTask = useCallback((taskId: string) => {
     setTasks((prev) => {
       const target = prev.find((t) => t.id === taskId);
       const updated = prev.filter((t) => t.id !== taskId);
-      try {
-        localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(updated));
-      } catch {
-        // Ignore
-      }
+      persistToStorage(STORAGE_KEY_TASKS, updated);
 
       if (target) {
-        setProjects((projList) =>
-          projList.map((p) => {
+        setProjects((projList) => {
+          const updatedProjects = projList.map((p) => {
             if (p.id === target.projectId) {
               return {
                 ...p,
@@ -296,22 +378,37 @@ export function DevFlowProvider({ children }: { children: React.ReactNode }) {
               };
             }
             return p;
-          })
-        );
+          });
+          persistToStorage(STORAGE_KEY_PROJECTS, updatedProjects);
+          return updatedProjects;
+        });
       }
 
       return updated;
     });
   }, []);
 
-  // Modal helpers
-  const openCreateTaskModal = useCallback((status: TaskStatus = "todo") => {
-    setDefaultTaskStatus(status);
+  const openCreateTaskModal = useCallback(
+    (status: TaskStatus = "todo", projectId?: string) => {
+      setEditingTask(null);
+      setDefaultTaskStatus(status);
+      setDefaultTaskProjectId(projectId);
+      setIsTaskModalOpen(true);
+    },
+    []
+  );
+
+  const openEditTaskModal = useCallback((task: Task) => {
+    setEditingTask(task);
+    setDefaultTaskStatus(task.status);
+    setDefaultTaskProjectId(task.projectId);
     setIsTaskModalOpen(true);
   }, []);
 
   const closeCreateTaskModal = useCallback(() => {
     setIsTaskModalOpen(false);
+    setEditingTask(null);
+    setDefaultTaskProjectId(undefined);
   }, []);
 
   const openCreateProjectModal = useCallback(() => {
@@ -330,15 +427,20 @@ export function DevFlowProvider({ children }: { children: React.ReactNode }) {
       toggleTheme,
       projects,
       addProject,
+      updateProject,
       deleteProject,
       tasks,
       addTask,
+      updateTask,
       updateTaskStatus,
       toggleTaskDone,
       deleteTask,
       isTaskModalOpen,
       defaultTaskStatus,
+      defaultTaskProjectId,
+      editingTask,
       openCreateTaskModal,
+      openEditTaskModal,
       closeCreateTaskModal,
       isProjectModalOpen,
       openCreateProjectModal,
@@ -351,15 +453,20 @@ export function DevFlowProvider({ children }: { children: React.ReactNode }) {
       toggleTheme,
       projects,
       addProject,
+      updateProject,
       deleteProject,
       tasks,
       addTask,
+      updateTask,
       updateTaskStatus,
       toggleTaskDone,
       deleteTask,
       isTaskModalOpen,
       defaultTaskStatus,
+      defaultTaskProjectId,
+      editingTask,
       openCreateTaskModal,
+      openEditTaskModal,
       closeCreateTaskModal,
       isProjectModalOpen,
       openCreateProjectModal,

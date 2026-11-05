@@ -7,7 +7,7 @@ import { useDevFlow } from "@/context/devflow-context";
 import { PlusIcon } from "@/components/icons";
 
 export function DashboardOverview() {
-  const { projects, tasks, openCreateProjectModal, openCreateTaskModal } = useDevFlow();
+  const { projects, tasks, openCreateTaskModal } = useDevFlow();
 
   const activeProjectsCount = projects.filter(
     (p) => p.status === "Ativo" || p.status === "Em progresso"
@@ -22,7 +22,6 @@ export function DashboardOverview() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
@@ -45,7 +44,6 @@ export function DashboardOverview() {
         </div>
       </div>
 
-      {/* Dynamic Metric Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           label="Projetos Ativos"
@@ -73,7 +71,6 @@ export function DashboardOverview() {
         />
       </div>
 
-      {/* Recent Projects */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
@@ -108,7 +105,7 @@ export function DashboardOverview() {
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
                     <Link
-                      href={`/kanban?project=${project.id}`}
+                      href={`/projects/${project.id}`}
                       className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 leading-snug hover:text-emerald-600 dark:hover:text-emerald-400"
                     >
                       {project.name}

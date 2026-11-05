@@ -39,7 +39,6 @@ export function Header({ title = "Visão Geral" }: HeaderProps) {
         </div>
 
         <div className="flex items-center gap-2.5">
-          {/* Global Search / Command Palette Trigger */}
           <button
             type="button"
             onClick={() => setIsPaletteOpen(true)}
@@ -52,7 +51,6 @@ export function Header({ title = "Visão Geral" }: HeaderProps) {
             </kbd>
           </button>
 
-          {/* Theme Switcher Toggle */}
           <button
             type="button"
             onClick={toggleTheme}
@@ -66,7 +64,6 @@ export function Header({ title = "Visão Geral" }: HeaderProps) {
             )}
           </button>
 
-          {/* Quick Add Task */}
           <button
             type="button"
             onClick={() => openCreateTaskModal("todo")}
@@ -76,7 +73,6 @@ export function Header({ title = "Visão Geral" }: HeaderProps) {
             Tarefa
           </button>
 
-          {/* New Project Link */}
           <Link
             href="/projects"
             className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-500 transition-colors cursor-pointer"
@@ -94,4 +90,3 @@ export function Header({ title = "Visão Geral" }: HeaderProps) {
     </>
   );
 }
-

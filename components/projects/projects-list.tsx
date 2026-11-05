@@ -4,16 +4,17 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Project } from "@/types";
 import { CreateProjectModal } from "@/components/projects/create-project-modal";
-import { SearchIcon, CloseIcon, TrashIcon } from "@/components/icons";
+import { SearchIcon, CloseIcon, TrashIcon, EditIcon } from "@/components/icons";
 import { useDevFlow } from "@/context/devflow-context";
 
 interface ProjectsListProps {
   initialProjects?: Project[];
 }
 
-export function ProjectsList({ initialProjects }: ProjectsListProps) {
-  const { projects, addProject, deleteProject } = useDevFlow();
+export function ProjectsList({}: ProjectsListProps) {
+  const { projects, addProject, updateProject, deleteProject } = useDevFlow();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isPending, startTransition] = useTransition();
 
@@ -23,6 +24,27 @@ export function ProjectsList({ initialProjects }: ProjectsListProps) {
     addProject(newProjectData);
   };
 
+  const handleUpdateProject = (
+    id: string,
+    data: Partial<Omit<Project, "id" | "tasksCount" | "completedTasks" | "updatedAt">>
+  ) => {
+    updateProject(id, data);
+  };
+
+  const handleOpenCreate = () => {
+    setEditingProject(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (project: Project) => {
+    setEditingProject(project);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingProject(null);
+  };
 
   const handleSearchChange = (value: string) => {
     startTransition(() => {
@@ -59,7 +81,7 @@ export function ProjectsList({ initialProjects }: ProjectsListProps) {
 
         <button
           type="button"
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleOpenCreate}
           className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-emerald-500 transition-colors cursor-pointer"
         >
           + Criar Novo Projeto
@@ -203,18 +225,26 @@ export function ProjectsList({ initialProjects }: ProjectsListProps) {
                     {p.updatedAt}
                   </td>
                   <td className="px-5 py-4 text-right">
-                    <div className="flex items-center justify-end gap-3">
+                    <div className="flex items-center justify-end gap-2">
                       <Link
                         href={`/kanban?project=${p.id}`}
-                        className="text-xs font-semibold text-emerald-600 hover:text-emerald-500 dark:text-emerald-400"
+                        className="text-xs font-semibold text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 mr-1"
                       >
                         Abrir Kanban →
                       </Link>
                       <button
                         type="button"
+                        onClick={() => handleOpenEdit(p)}
+                        title="Editar projeto"
+                        className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors p-1 rounded cursor-pointer"
+                      >
+                        <EditIcon className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => deleteProject(p.id)}
                         title="Excluir projeto"
-                        className="text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1 rounded"
+                        className="text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1 rounded cursor-pointer"
                       >
                         <TrashIcon className="h-3.5 w-3.5" />
                       </button>
@@ -229,8 +259,10 @@ export function ProjectsList({ initialProjects }: ProjectsListProps) {
 
       <CreateProjectModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleCloseModal}
         onCreateProject={handleCreateProject}
+        initialProject={editingProject}
+        onUpdateProject={handleUpdateProject}
       />
     </div>
   );

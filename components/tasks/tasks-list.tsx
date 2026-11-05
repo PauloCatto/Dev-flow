@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useDevFlow } from "@/context/devflow-context";
 import { PRIORITY_BADGES } from "@/lib/constants";
-import { TaskStatus } from "@/types";
 import {
   PlusIcon,
   SearchIcon,
   TrashIcon,
   CloseIcon,
   CheckIcon,
+  EditIcon,
 } from "@/components/icons";
 
 export function TasksList() {
@@ -19,13 +20,14 @@ export function TasksList() {
     toggleTaskDone,
     deleteTask,
     openCreateTaskModal,
+    openEditTaskModal,
   } = useDevFlow();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [projectFilter, setProjectFilter] = useState<string>("all");
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const filteredTasks = tasks.filter((task) => {
     const matchesQuery =
@@ -55,7 +57,6 @@ export function TasksList() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
@@ -76,7 +77,6 @@ export function TasksList() {
         </button>
       </div>
 
-      {/* Filter and Search Bar */}
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900">
         <div className="relative flex-1 min-w-[220px]">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-400">
@@ -103,7 +103,6 @@ export function TasksList() {
           )}
         </div>
 
-        {/* Status Filter */}
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
@@ -117,7 +116,6 @@ export function TasksList() {
           <option value="in_review">Em Revisão</option>
         </select>
 
-        {/* Priority Filter */}
         <select
           value={priorityFilter}
           onChange={(e) => setPriorityFilter(e.target.value)}
@@ -130,7 +128,6 @@ export function TasksList() {
           <option value="baixa">Baixa</option>
         </select>
 
-        {/* Project Filter */}
         <select
           value={projectFilter}
           onChange={(e) => setProjectFilter(e.target.value)}
@@ -144,13 +141,11 @@ export function TasksList() {
           ))}
         </select>
 
-        {/* Metrics Badge */}
         <div className="text-xs text-zinc-500 dark:text-zinc-400 font-medium ml-auto pl-2">
           {completedCount} de {tasks.length} concluídas
         </div>
       </div>
 
-      {/* Tasks Table/List */}
       <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
         {filteredTasks.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-center">
@@ -187,7 +182,6 @@ export function TasksList() {
                       : "hover:bg-zinc-50/75 dark:hover:bg-zinc-800/50"
                   }`}
                 >
-                  {/* Left: Checkbox & Info */}
                   <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
                     <button
                       type="button"
@@ -214,9 +208,12 @@ export function TasksList() {
                         </span>
 
                         {project && (
-                          <span className="font-mono text-[10px] uppercase rounded bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 text-zinc-500 dark:text-zinc-400">
+                          <Link
+                            href={`/projects/${project.id}`}
+                            className="font-mono text-[10px] uppercase rounded bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 text-zinc-500 dark:text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400"
+                          >
                             {project.key}
-                          </span>
+                          </Link>
                         )}
                       </div>
 
@@ -226,7 +223,6 @@ export function TasksList() {
                     </div>
                   </div>
 
-                  {/* Right: Badges & Actions */}
                   <div className="flex items-center gap-2.5 self-end sm:self-center shrink-0">
                     <span
                       className={`rounded-md border px-2 py-0.5 text-[11px] font-medium ${badge.className}`}
@@ -240,9 +236,18 @@ export function TasksList() {
 
                     <button
                       type="button"
+                      onClick={() => openEditTaskModal(task)}
+                      title="Editar tarefa"
+                      className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200 transition-colors opacity-80 sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer"
+                    >
+                      <EditIcon className="h-4 w-4" />
+                    </button>
+
+                    <button
+                      type="button"
                       onClick={() => deleteTask(task.id)}
                       title="Excluir tarefa"
-                      className="rounded p-1 text-zinc-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400 transition-colors opacity-80 sm:opacity-0 sm:group-hover:opacity-100"
+                      className="rounded p-1 text-zinc-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400 transition-colors opacity-80 sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer"
                     >
                       <TrashIcon className="h-4 w-4" />
                     </button>

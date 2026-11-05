@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Project, ProjectStatus } from "@/types";
 
 interface CreateProjectModalProps {
@@ -9,12 +9,19 @@ interface CreateProjectModalProps {
   onCreateProject: (
     newProject: Omit<Project, "id" | "tasksCount" | "completedTasks" | "updatedAt">
   ) => void;
+  initialProject?: Project | null;
+  onUpdateProject?: (
+    id: string,
+    data: Partial<Omit<Project, "id" | "tasksCount" | "completedTasks" | "updatedAt">>
+  ) => void;
 }
 
 export function CreateProjectModal({
   isOpen,
   onClose,
   onCreateProject,
+  initialProject,
+  onUpdateProject,
 }: CreateProjectModalProps) {
   const [name, setName] = useState("");
   const [key, setKey] = useState("");
@@ -23,11 +30,32 @@ export function CreateProjectModal({
   const [status, setStatus] = useState<ProjectStatus>("Ativo");
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    if (isOpen) {
+      if (initialProject) {
+        setName(initialProject.name);
+        setKey(initialProject.key);
+        setDescription(initialProject.description);
+        setLead(initialProject.lead);
+        setStatus(initialProject.status);
+      } else {
+        setName("");
+        setKey("");
+        setDescription("");
+        setLead("Paulo Developer");
+        setStatus("Ativo");
+      }
+      setError("");
+    }
+  }, [isOpen, initialProject]);
+
   if (!isOpen) return null;
+
+  const isEditing = Boolean(initialProject);
 
   const handleNameChange = (val: string) => {
     setName(val);
-    if (!key || key.length <= 4) {
+    if (!isEditing && (!key || key.length <= 4)) {
       const generatedKey = val
         .split(" ")
         .map((w) => w.charAt(0))
@@ -51,13 +79,23 @@ export function CreateProjectModal({
       return;
     }
 
-    onCreateProject({
-      name: name.trim(),
-      key: key.trim().toUpperCase(),
-      description: description.trim() || "Sem descrição informada.",
-      lead,
-      status,
-    });
+    if (initialProject && onUpdateProject) {
+      onUpdateProject(initialProject.id, {
+        name: name.trim(),
+        key: key.trim().toUpperCase(),
+        description: description.trim() || "Sem descrição informada.",
+        lead: lead.trim() || "Paulo Developer",
+        status,
+      });
+    } else {
+      onCreateProject({
+        name: name.trim(),
+        key: key.trim().toUpperCase(),
+        description: description.trim() || "Sem descrição informada.",
+        lead: lead.trim() || "Paulo Developer",
+        status,
+      });
+    }
 
     setName("");
     setKey("");
@@ -72,16 +110,18 @@ export function CreateProjectModal({
         <div className="flex items-center justify-between pb-4 border-b border-zinc-100 dark:border-zinc-800">
           <div>
             <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-              Criar Novo Projeto
+              {isEditing ? "Editar Projeto" : "Criar Novo Projeto"}
             </h2>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Cadastre uma nova iniciativa para gerenciar no DevFlow.
+              {isEditing
+                ? "Atualize as informações e o status deste projeto."
+                : "Cadastre uma nova iniciativa para gerenciar no DevFlow."}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+            className="rounded-lg p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-200 cursor-pointer"
           >
             <svg
               className="h-5 w-5"
@@ -132,7 +172,7 @@ export function CreateProjectModal({
 
             <div>
               <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                Status Inicial
+                Status
               </label>
               <select
                 value={status}
@@ -142,6 +182,7 @@ export function CreateProjectModal({
                 <option value="Ativo">Ativo</option>
                 <option value="Em progresso">Em progresso</option>
                 <option value="Planejado">Planejado</option>
+                <option value="Concluído">Concluído</option>
               </select>
             </div>
           </div>
@@ -175,15 +216,15 @@ export function CreateProjectModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-colors"
+              className="rounded-lg border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-emerald-500 transition-colors"
+              className="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-emerald-500 transition-colors cursor-pointer"
             >
-              Criar Projeto
+              {isEditing ? "Salvar Alterações" : "Criar Projeto"}
             </button>
           </div>
         </form>

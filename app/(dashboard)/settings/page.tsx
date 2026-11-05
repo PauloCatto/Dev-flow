@@ -40,7 +40,6 @@ export default function SettingsPage() {
       )}
 
       <form onSubmit={handleSave} className="space-y-6">
-        {/* Workspace Profile */}
         <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 space-y-6">
           <div>
             <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
@@ -83,7 +82,6 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Appearance & Theme */}
         <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 space-y-6">
           <div>
             <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
@@ -95,7 +93,6 @@ export default function SettingsPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {/* Light Option */}
             <button
               type="button"
               onClick={() => setTheme("light")}
@@ -114,7 +111,6 @@ export default function SettingsPage() {
               </div>
             </button>
 
-            {/* Dark Option */}
             <button
               type="button"
               onClick={() => setTheme("dark")}
@@ -133,7 +129,6 @@ export default function SettingsPage() {
               </div>
             </button>
 
-            {/* System Option */}
             <button
               type="button"
               onClick={() => setTheme("system")}
@@ -154,7 +149,6 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Notifications */}
         <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 space-y-4">
           <div>
             <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
