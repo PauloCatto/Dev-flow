@@ -348,3 +348,4 @@ export function ProjectDetails({ projectId }: ProjectDetailsProps) {
     </div>
   );
 }
+

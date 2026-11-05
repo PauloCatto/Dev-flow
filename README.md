@@ -53,19 +53,19 @@ devflow/
 - [x] **App Shell e Nested Layouts:** Navegação instantânea SPA com preservação de estado da Sidebar via Route Groups `(dashboard)`.
 - [x] **Detecção de Rota Ativa:** Destaque dinâmico de link ativo usando o hook `usePathname()` em Client Component.
 - [x] **Dashboard de Métricas Dinâmico:** KPIs em tempo real de projetos ativos, tarefas concluídas e progresso calculados com base no estado global.
-- [x] **Gestão de Projetos:**
+- [x] **Gestão de Projetos (`/projects` e `/projects/[id]`):**
   - Tabela com informações de chave, líder, total de tarefas e última atualização.
-  - Filtro e busca em tempo real por nome, chave ou responsável.
-  - Criação de novo projeto via Modal acessível com foco em UX (geração automática de chave/slug).
-  - Exclusão de projetos e contadores automáticos de tarefas.
+  - Página dedicada de detalhes do projeto (`/projects/[id]`) com KPIs próprios, barra de progresso e lista filtrável de tarefas.
+  - Criação e edição completa de projetos via Modal acessível com geração automática de chave/slug.
+  - Exclusão de projetos com limpeza em cascata de tarefas vinculadas e sincronização no `localStorage`.
 - [x] **Quadro Kanban Interativo (Drag and Drop):**
   - Arraste e solte cartões nativamente (HTML5 Drag and Drop) entre colunas (*A Fazer*, *Em Andamento*, *Em Revisão*, *Concluído*).
   - Destaque visual dinâmico de colunas de destino e animações de soltura.
   - Seletor rápido de coluna diretamente no cartão para acessibilidade em dispositivos móveis e teclado.
-  - Filtros instantâneos por projeto, prioridade e busca por texto.
+  - Filtros instantâneos por projeto (incluindo via query string `?project=`), prioridade e busca por texto.
 - [x] **Gestão de Tarefas (`CreateTaskModal` & `/tasks`):**
-  - Modal unificado para criar tarefas atribuídas a projetos, com prioridade, responsável e prazos.
-  - Lista interativa com marcação de conclusão (checkbox) e exclusão.
+  - Modal unificado para criar e editar tarefas atribuídas a projetos, com prioridade, responsável e prazos.
+  - Lista interativa com marcação de conclusão (checkbox), edição e exclusão.
 - [x] **Command Palette Global (`Ctrl+K` / `Cmd+K`):**
   - Modal estilo Spotlight com busca instantânea entre páginas, projetos cadastrados e ações rápidas (criar tarefa, alternar tema).
 - [x] **Dark Mode Nativo:**
@@ -117,4 +117,5 @@ Para detalhes aprofundados sobre decisões de arquitetura, comparações técnic
 * [`docs/03-estado-formularios-e-modais.md`](./docs/03-estado-formularios-e-modais.md)
 * [`docs/04-hooks-useeffect-e-command-palette.md`](./docs/04-hooks-useeffect-e-command-palette.md)
 * [`docs/05-kanban-drag-and-drop-e-context-api.md`](./docs/05-kanban-drag-and-drop-e-context-api.md)
+* [`docs/06-rotas-dinamicas-edicao-e-eslint.md`](./docs/06-rotas-dinamicas-edicao-e-eslint.md)
 

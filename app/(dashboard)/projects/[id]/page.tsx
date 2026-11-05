@@ -9,3 +9,4 @@ export default async function ProjectDetailsPage({
 
   return <ProjectDetails projectId={id} />;
 }
+
