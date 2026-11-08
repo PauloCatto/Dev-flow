@@ -10,6 +10,16 @@ import React, {
 } from "react";
 import { Project, Task, TaskStatus } from "@/types";
 import { MOCK_PROJECTS, MOCK_TASKS } from "@/lib/mock-data";
+import {
+  createProjectAction,
+  updateProjectAction,
+  deleteProjectAction,
+  createTaskAction,
+  updateTaskAction,
+  updateTaskStatusAction,
+  toggleTaskDoneAction,
+  deleteTaskAction,
+} from "@/app/actions/devflow";
 
 type ThemeMode = "light" | "dark" | "system";
 
@@ -54,21 +64,21 @@ interface DevFlowContextType {
 
 const DevFlowContext = createContext<DevFlowContextType | undefined>(undefined);
 
-const STORAGE_KEY_PROJECTS = "devflow_projects_v1";
-const STORAGE_KEY_TASKS = "devflow_tasks_v1";
 const STORAGE_KEY_THEME = "devflow_theme_v1";
 
-function persistToStorage(key: string, value: unknown) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    return;
-  }
+interface DevFlowProviderProps {
+  children: React.ReactNode;
+  initialProjects?: Project[];
+  initialTasks?: Task[];
 }
 
-export function DevFlowProvider({ children }: { children: React.ReactNode }) {
-  const [projects, setProjects] = useState<Project[]>(MOCK_PROJECTS);
-  const [tasks, setTasks] = useState<Task[]>(MOCK_TASKS);
+export function DevFlowProvider({
+  children,
+  initialProjects = MOCK_PROJECTS,
+  initialTasks = MOCK_TASKS,
+}: DevFlowProviderProps) {
+  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [theme, setThemeState] = useState<ThemeMode>("light");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
 
@@ -82,16 +92,6 @@ export function DevFlowProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
-      const savedProjects = localStorage.getItem(STORAGE_KEY_PROJECTS);
-      if (savedProjects) {
-        setProjects(JSON.parse(savedProjects));
-      }
-
-      const savedTasks = localStorage.getItem(STORAGE_KEY_TASKS);
-      if (savedTasks) {
-        setTasks(JSON.parse(savedTasks));
-      }
-
       const savedTheme =
         (localStorage.getItem(STORAGE_KEY_THEME) as ThemeMode) || "light";
       setThemeState(savedTheme);
@@ -138,19 +138,17 @@ export function DevFlowProvider({ children }: { children: React.ReactNode }) {
     (
       data: Omit<Project, "id" | "tasksCount" | "completedTasks" | "updatedAt">
     ): Project => {
+      const id = `proj-${Date.now()}`;
       const newProject: Project = {
         ...data,
-        id: `proj-${Date.now()}`,
+        id,
         tasksCount: 0,
         completedTasks: 0,
         updatedAt: "Agora mesmo",
       };
 
-      setProjects((prev) => {
-        const updated = [newProject, ...prev];
-        persistToStorage(STORAGE_KEY_PROJECTS, updated);
-        return updated;
-      });
+      setProjects((prev) => [newProject, ...prev]);
+      void createProjectAction({ ...data, id });
 
       return newProject;
     },
@@ -162,52 +160,40 @@ export function DevFlowProvider({ children }: { children: React.ReactNode }) {
       id: string,
       data: Partial<Omit<Project, "id" | "tasksCount" | "completedTasks" | "updatedAt">>
     ) => {
-      setProjects((prev) => {
-        const updated = prev.map((p) =>
+      setProjects((prev) =>
+        prev.map((p) =>
           p.id === id
             ? {
-                ...p,
-                ...data,
-                updatedAt: "Agora mesmo",
-              }
+              ...p,
+              ...data,
+              updatedAt: "Agora mesmo",
+            }
             : p
-        );
-        persistToStorage(STORAGE_KEY_PROJECTS, updated);
-        return updated;
-      });
+        )
+      );
+      void updateProjectAction(id, data);
     },
     []
   );
 
   const deleteProject = useCallback((id: string) => {
-    setProjects((prev) => {
-      const updated = prev.filter((p) => p.id !== id);
-      persistToStorage(STORAGE_KEY_PROJECTS, updated);
-      return updated;
-    });
-
-    setTasks((prev) => {
-      const updated = prev.filter((t) => t.projectId !== id);
-      persistToStorage(STORAGE_KEY_TASKS, updated);
-      return updated;
-    });
+    setProjects((prev) => prev.filter((p) => p.id !== id));
+    setTasks((prev) => prev.filter((t) => t.projectId !== id));
+    void deleteProjectAction(id);
   }, []);
 
   const addTask = useCallback((data: Omit<Task, "id" | "createdAt">): Task => {
+    const id = `task-${Date.now()}`;
     const newTask: Task = {
       ...data,
-      id: `task-${Date.now()}`,
+      id,
       createdAt: "Hoje",
     };
 
-    setTasks((prev) => {
-      const updated = [newTask, ...prev];
-      persistToStorage(STORAGE_KEY_TASKS, updated);
-      return updated;
-    });
+    setTasks((prev) => [newTask, ...prev]);
 
-    setProjects((prev) => {
-      const updated = prev.map((p) => {
+    setProjects((prev) =>
+      prev.map((p) => {
         if (p.id === data.projectId) {
           return {
             ...p,
@@ -218,10 +204,10 @@ export function DevFlowProvider({ children }: { children: React.ReactNode }) {
           };
         }
         return p;
-      });
-      persistToStorage(STORAGE_KEY_PROJECTS, updated);
-      return updated;
-    });
+      })
+    );
+
+    void createTaskAction({ ...data, id });
 
     return newTask;
   }, []);
@@ -234,15 +220,14 @@ export function DevFlowProvider({ children }: { children: React.ReactNode }) {
 
         const nextTask: Task = { ...existing, ...data };
         const updated = prev.map((t) => (t.id === taskId ? nextTask : t));
-        persistToStorage(STORAGE_KEY_TASKS, updated);
 
         const oldProjectId = existing.projectId;
         const newProjectId = nextTask.projectId;
         const wasDone = existing.status === "done";
         const isNowDone = nextTask.status === "done";
 
-        setProjects((projList) => {
-          const updatedProjects = projList.map((p) => {
+        setProjects((projList) =>
+          projList.map((p) => {
             if (oldProjectId === newProjectId && p.id === oldProjectId) {
               const diff = isNowDone === wasDone ? 0 : isNowDone ? 1 : -1;
               return {
@@ -272,13 +257,13 @@ export function DevFlowProvider({ children }: { children: React.ReactNode }) {
               };
             }
             return p;
-          });
-          persistToStorage(STORAGE_KEY_PROJECTS, updatedProjects);
-          return updatedProjects;
-        });
+          })
+        );
 
         return updated;
       });
+
+      void updateTaskAction(taskId, data);
     },
     []
   );
@@ -299,11 +284,9 @@ export function DevFlowProvider({ children }: { children: React.ReactNode }) {
           return t;
         });
 
-        persistToStorage(STORAGE_KEY_TASKS, updated);
-
         if (targetProjectId && wasDone !== isNowDone) {
-          setProjects((projList) => {
-            const updatedProjects = projList.map((p) => {
+          setProjects((projList) =>
+            projList.map((p) => {
               if (p.id === targetProjectId) {
                 const diff = isNowDone ? 1 : -1;
                 return {
@@ -313,14 +296,14 @@ export function DevFlowProvider({ children }: { children: React.ReactNode }) {
                 };
               }
               return p;
-            });
-            persistToStorage(STORAGE_KEY_PROJECTS, updatedProjects);
-            return updatedProjects;
-          });
+            })
+          );
         }
 
         return updated;
       });
+
+      void updateTaskStatusAction(taskId, newStatus);
     },
     []
   );
@@ -335,10 +318,9 @@ export function DevFlowProvider({ children }: { children: React.ReactNode }) {
       const updated = prev.map((t) =>
         t.id === taskId ? { ...t, status: nextStatus } : t
       );
-      persistToStorage(STORAGE_KEY_TASKS, updated);
 
-      setProjects((projList) => {
-        const updatedProjects = projList.map((p) => {
+      setProjects((projList) =>
+        projList.map((p) => {
           if (p.id === current.projectId) {
             const diff = isNowDone ? 1 : -1;
             return {
@@ -348,24 +330,23 @@ export function DevFlowProvider({ children }: { children: React.ReactNode }) {
             };
           }
           return p;
-        });
-        persistToStorage(STORAGE_KEY_PROJECTS, updatedProjects);
-        return updatedProjects;
-      });
+        })
+      );
 
       return updated;
     });
+
+    void toggleTaskDoneAction(taskId);
   }, []);
 
   const deleteTask = useCallback((taskId: string) => {
     setTasks((prev) => {
       const target = prev.find((t) => t.id === taskId);
       const updated = prev.filter((t) => t.id !== taskId);
-      persistToStorage(STORAGE_KEY_TASKS, updated);
 
       if (target) {
-        setProjects((projList) => {
-          const updatedProjects = projList.map((p) => {
+        setProjects((projList) =>
+          projList.map((p) => {
             if (p.id === target.projectId) {
               return {
                 ...p,
@@ -378,14 +359,14 @@ export function DevFlowProvider({ children }: { children: React.ReactNode }) {
               };
             }
             return p;
-          });
-          persistToStorage(STORAGE_KEY_PROJECTS, updatedProjects);
-          return updatedProjects;
-        });
+          })
+        );
       }
 
       return updated;
     });
+
+    void deleteTaskAction(taskId);
   }, []);
 
   const openCreateTaskModal = useCallback(
