@@ -7,8 +7,24 @@ import { KANBAN_COLUMNS } from "@/lib/constants";
 import { CloseIcon } from "@/components/icons";
 
 export function CreateTaskModal() {
+  const { isTaskModalOpen, editingTask, defaultTaskStatus, defaultTaskProjectId } =
+    useDevFlow();
+
+  if (!isTaskModalOpen) return null;
+
+  return (
+    <TaskModalContent
+      key={
+        editingTask
+          ? `edit-${editingTask.id}`
+          : `new-${defaultTaskStatus}-${defaultTaskProjectId ?? "default"}`
+      }
+    />
+  );
+}
+
+function TaskModalContent() {
   const {
-    isTaskModalOpen,
     defaultTaskStatus,
     defaultTaskProjectId,
     editingTask,
@@ -18,60 +34,34 @@ export function CreateTaskModal() {
     projects,
   } = useDevFlow();
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [projectId, setProjectId] = useState("");
-  const [status, setStatus] = useState<TaskStatus>("todo");
-  const [priority, setPriority] = useState<TaskPriority>("media");
-  const [assigneeName, setAssigneeName] = useState("Paulo Developer");
-  const [dueDate, setDueDate] = useState("Em 3 dias");
+  const [title, setTitle] = useState(editingTask?.title ?? "");
+  const [description, setDescription] = useState(editingTask?.description ?? "");
+  const [projectId, setProjectId] = useState(
+    editingTask?.projectId ??
+      defaultTaskProjectId ??
+      (projects.length > 0 ? projects[0].id : "")
+  );
+  const [status, setStatus] = useState<TaskStatus>(
+    editingTask?.status ?? defaultTaskStatus ?? "todo"
+  );
+  const [priority, setPriority] = useState<TaskPriority>(
+    editingTask?.priority ?? "media"
+  );
+  const [assigneeName, setAssigneeName] = useState(
+    editingTask?.assignee.name ?? "Paulo Developer"
+  );
+  const [dueDate, setDueDate] = useState(editingTask?.dueDate ?? "Em 3 dias");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (isTaskModalOpen) {
-      if (editingTask) {
-        setTitle(editingTask.title);
-        setDescription(editingTask.description || "");
-        setProjectId(editingTask.projectId);
-        setStatus(editingTask.status);
-        setPriority(editingTask.priority);
-        setAssigneeName(editingTask.assignee.name);
-        setDueDate(editingTask.dueDate || "Sem prazo");
-      } else {
-        setTitle("");
-        setDescription("");
-        setStatus(defaultTaskStatus || "todo");
-        setPriority("media");
-        setAssigneeName("Paulo Developer");
-        setDueDate("Em 3 dias");
-        if (defaultTaskProjectId) {
-          setProjectId(defaultTaskProjectId);
-        } else if (projects.length > 0 && !projectId) {
-          setProjectId(projects[0].id);
-        }
-      }
-      setError("");
-    }
-  }, [
-    isTaskModalOpen,
-    editingTask,
-    defaultTaskStatus,
-    defaultTaskProjectId,
-    projects,
-    projectId,
-  ]);
-
-  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isTaskModalOpen) {
+      if (e.key === "Escape") {
         closeCreateTaskModal();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isTaskModalOpen, closeCreateTaskModal]);
-
-  if (!isTaskModalOpen) return null;
+  }, [closeCreateTaskModal]);
 
   const isEditing = Boolean(editingTask);
 
@@ -112,9 +102,6 @@ export function CreateTaskModal() {
       });
     }
 
-    setTitle("");
-    setDescription("");
-    setError("");
     closeCreateTaskModal();
   };
 

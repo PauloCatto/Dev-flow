@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Project, ProjectStatus } from "@/types";
 
 interface CreateProjectModalProps {
@@ -16,40 +16,31 @@ interface CreateProjectModalProps {
   ) => void;
 }
 
-export function CreateProjectModal({
-  isOpen,
+export function CreateProjectModal(props: CreateProjectModalProps) {
+  if (!props.isOpen) return null;
+
+  return (
+    <ProjectModalContent
+      key={props.initialProject?.id ?? "new-project"}
+      {...props}
+    />
+  );
+}
+
+function ProjectModalContent({
   onClose,
   onCreateProject,
   initialProject,
   onUpdateProject,
 }: CreateProjectModalProps) {
-  const [name, setName] = useState("");
-  const [key, setKey] = useState("");
-  const [description, setDescription] = useState("");
-  const [lead, setLead] = useState("Paulo Developer");
-  const [status, setStatus] = useState<ProjectStatus>("Ativo");
+  const [name, setName] = useState(initialProject?.name ?? "");
+  const [key, setKey] = useState(initialProject?.key ?? "");
+  const [description, setDescription] = useState(initialProject?.description ?? "");
+  const [lead, setLead] = useState(initialProject?.lead ?? "Paulo Developer");
+  const [status, setStatus] = useState<ProjectStatus>(
+    initialProject?.status ?? "Ativo"
+  );
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (isOpen) {
-      if (initialProject) {
-        setName(initialProject.name);
-        setKey(initialProject.key);
-        setDescription(initialProject.description);
-        setLead(initialProject.lead);
-        setStatus(initialProject.status);
-      } else {
-        setName("");
-        setKey("");
-        setDescription("");
-        setLead("Paulo Developer");
-        setStatus("Ativo");
-      }
-      setError("");
-    }
-  }, [isOpen, initialProject]);
-
-  if (!isOpen) return null;
 
   const isEditing = Boolean(initialProject);
 
@@ -97,10 +88,6 @@ export function CreateProjectModal({
       });
     }
 
-    setName("");
-    setKey("");
-    setDescription("");
-    setError("");
     onClose();
   };
 

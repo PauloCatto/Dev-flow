@@ -79,8 +79,16 @@ export function DevFlowProvider({
 }: DevFlowProviderProps) {
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
-  const [theme, setThemeState] = useState<ThemeMode>("light");
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
+  const [theme, setThemeState] = useState<ThemeMode>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        return (localStorage.getItem(STORAGE_KEY_THEME) as ThemeMode) || "light";
+      } catch {
+        return "light";
+      }
+    }
+    return "light";
+  });
 
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [defaultTaskStatus, setDefaultTaskStatus] = useState<TaskStatus>("todo");
@@ -90,33 +98,24 @@ export function DevFlowProvider({
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
 
-  useEffect(() => {
-    try {
-      const savedTheme =
-        (localStorage.getItem(STORAGE_KEY_THEME) as ThemeMode) || "light";
-      setThemeState(savedTheme);
-    } catch {
-      return;
+  const resolvedTheme: "light" | "dark" = useMemo(() => {
+    if (theme === "system") {
+      if (typeof window !== "undefined") {
+        return window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+      }
+      return "light";
     }
-  }, []);
+    return theme;
+  }, [theme]);
 
   useEffect(() => {
     const root = document.documentElement;
-    let effectiveDark = false;
-
-    if (theme === "system") {
-      const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      effectiveDark = systemDark;
-    } else {
-      effectiveDark = theme === "dark";
-    }
-
-    if (effectiveDark) {
+    if (resolvedTheme === "dark") {
       root.classList.add("dark");
-      setResolvedTheme("dark");
     } else {
       root.classList.remove("dark");
-      setResolvedTheme("light");
     }
 
     try {
@@ -124,7 +123,7 @@ export function DevFlowProvider({
     } catch {
       return;
     }
-  }, [theme]);
+  }, [theme, resolvedTheme]);
 
   const setTheme = useCallback((newTheme: ThemeMode) => {
     setThemeState(newTheme);
@@ -164,10 +163,10 @@ export function DevFlowProvider({
         prev.map((p) =>
           p.id === id
             ? {
-              ...p,
-              ...data,
-              updatedAt: "Agora mesmo",
-            }
+                ...p,
+                ...data,
+                updatedAt: "Agora mesmo",
+              }
             : p
         )
       );

@@ -71,18 +71,18 @@ devflow/
 - [x] **Dark Mode Nativo:**
   - Alternância instantânea entre modo Claro, Escuro e Automático (Sistema).
   - Configuração nativa com `@custom-variant dark` no Tailwind CSS v4 e persistência em `localStorage`.
-- [x] **Estado Centralizado e Persistência:**
-  - `DevFlowProvider` com Context API unificando projetos, tarefas e tema, com sincronização em `localStorage`.
+- [x] **Backend & Banco de Dados Relacional (SQLite + Prisma ORM):**
+  - Esquema relacional `Project` e `Task` com `ON DELETE CASCADE` em `prisma/schema.prisma`.
+  - Server Actions (`"use server"`) em `app/actions/devflow.ts` com *seed* automático inicial, sincronização de contadores e `revalidatePath`.
+  - Atualização otimista (*Optimistic UI*) combinada com persistência SQL no servidor.
 
 ---
 
 ## 🗺️ Roadmap de Evolução
 
 - [ ] **Autenticação e Permissões:** Login, sessões e proteção de rotas com Auth.js / NextAuth.
-- [ ] **Banco de Dados Relacional:** Conexão com PostgreSQL via Prisma ORM / Drizzle.
-- [ ] **Server Actions & APIs:** Mutações no servidor com validação de esquema (Zod).
 - [ ] **Testes Automatizados:** Testes unitários, de componentes e E2E (Vitest / Playwright).
-- [ ] **Deploy e Produção:** Deploy automatizado e otimizações de SEO / Performance.
+- [ ] **Deploy e Produção:** Deploy automatizado e conexão com banco cloud na Vercel.
 
 ---
 
@@ -118,4 +118,5 @@ Para detalhes aprofundados sobre decisões de arquitetura, comparações técnic
 * [`docs/04-hooks-useeffect-e-command-palette.md`](./docs/04-hooks-useeffect-e-command-palette.md)
 * [`docs/05-kanban-drag-and-drop-e-context-api.md`](./docs/05-kanban-drag-and-drop-e-context-api.md)
 * [`docs/06-rotas-dinamicas-edicao-e-eslint.md`](./docs/06-rotas-dinamicas-edicao-e-eslint.md)
+* [`docs/07-sqlite-prisma-e-server-actions.md`](./docs/07-sqlite-prisma-e-server-actions.md)
 

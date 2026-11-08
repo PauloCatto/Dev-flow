@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useDevFlow } from "@/context/devflow-context";
 import { KANBAN_COLUMNS, PRIORITY_BADGES } from "@/lib/constants";
@@ -28,17 +28,15 @@ export function KanbanBoard() {
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedProjectId, setSelectedProjectId] = useState<string>("all");
+  const [selectedProjectId, setSelectedProjectId] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("project") || "all";
+    }
+    return "all";
+  });
   const [selectedPriority, setSelectedPriority] = useState<string>("all");
   const [, startTransition] = useTransition();
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const projectParam = params.get("project");
-    if (projectParam) {
-      setSelectedProjectId(projectParam);
-    }
-  }, []);
 
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
     e.dataTransfer.setData("text/plain", taskId);
