@@ -327,6 +327,18 @@ export async function createTaskAction(
   data: Omit<Task, "id" | "createdAt"> & { id?: string }
 ): Promise<Task> {
   const { userId } = await resolveOwnerKey();
+  if (!data.projectId) {
+    throw new Error("É necessário vincular a tarefa a um projeto existente.");
+  }
+
+  const localDb = await readLocalDb();
+  const projectExists = localDb.projects.some(
+    (p) => p.id === data.projectId && p.userId === userId
+  );
+  if (!projectExists) {
+    throw new Error("Projeto não encontrado para esta conta.");
+  }
+
   const id = data.id || `task-${Date.now()}`;
   const newTask: Task = {
     id,
@@ -340,7 +352,6 @@ export async function createTaskAction(
     createdAt: "Hoje",
   };
 
-  const localDb = await readLocalDb();
   localDb.tasks = [{ ...newTask, userId }, ...localDb.tasks];
   localDb.projects = localDb.projects.map((p) =>
     p.id === data.projectId && p.userId === userId

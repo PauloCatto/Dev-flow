@@ -6,7 +6,7 @@ import { DevFlowProvider } from "@/context/devflow-context";
 import { CreateTaskModal } from "@/components/tasks/create-task-modal";
 import { getInitialWorkspaceData } from "@/app/actions/devflow";
 import { SESSION_COOKIE_NAME, verifySessionToken } from "@/lib/auth";
-import { MOCK_PROJECTS, MOCK_TASKS } from "@/lib/mock-data";
+import { Project, Task } from "@/types";
 
 export default async function DashboardLayout({
   children,
@@ -21,20 +21,22 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  let initialProjects = MOCK_PROJECTS;
-  let initialTasks = MOCK_TASKS;
+  let initialProjects: Project[] = [];
+  let initialTasks: Task[] = [];
 
   try {
     const data = await getInitialWorkspaceData();
     initialProjects = data.projects;
     initialTasks = data.tasks;
   } catch {
-    initialProjects = MOCK_PROJECTS;
-    initialTasks = MOCK_TASKS;
+    initialProjects = [];
+    initialTasks = [];
   }
 
   return (
     <DevFlowProvider
+      key={user.id}
+      currentUser={user}
       initialProjects={initialProjects}
       initialTasks={initialTasks}
     >

@@ -138,3 +138,5 @@ export function LogoutIcon({ className = "h-4 w-4" }: IconProps) {
     </svg>
   );
 }
+
+export { ProjectsIcon as FolderIcon };

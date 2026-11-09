@@ -5,10 +5,22 @@ import { useDevFlow } from "@/context/devflow-context";
 import { SunIcon, MoonIcon, CheckIcon } from "@/components/icons";
 
 export default function SettingsPage() {
-  const { theme, setTheme } = useDevFlow();
+  const { theme, setTheme, currentUser } = useDevFlow();
 
-  const [workspaceName, setWorkspaceName] = useState("DevFlow Core Org");
-  const [workspaceSlug, setWorkspaceSlug] = useState("devflow-core");
+  const defaultOrgName = currentUser?.name
+    ? `${currentUser.name} Workspace`
+    : "DevFlow Core Org";
+  const defaultOrgSlug = currentUser?.name
+    ? currentUser.name
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")
+    : "devflow-core";
+
+  const [workspaceName, setWorkspaceName] = useState(defaultOrgName);
+  const [workspaceSlug, setWorkspaceSlug] = useState(defaultOrgSlug);
   const [emailAlerts, setEmailAlerts] = useState(true);
   const [taskAssignments, setTaskAssignments] = useState(true);
   const [savedSuccess, setSavedSuccess] = useState(false);
