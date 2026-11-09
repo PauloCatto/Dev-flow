@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { DASHBOARD_NAV_ITEMS, NavItem } from "@/config/navigation";
+import { AuthUser } from "@/types";
+import { logoutAction } from "@/app/actions/auth";
 import {
   DashboardIcon,
   ProjectsIcon,
@@ -11,6 +13,7 @@ import {
   KanbanIcon,
   SettingsIcon,
   SidebarToggleIcon,
+  LogoutIcon,
 } from "@/components/icons";
 
 const ICON_MAP: Record<
@@ -24,9 +27,22 @@ const ICON_MAP: Record<
   settings: SettingsIcon,
 };
 
-export function Sidebar() {
+interface SidebarProps {
+  user?: AuthUser | null;
+}
+
+export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const displayName = user?.name || "Paulo Developer";
+  const displayEmail = user?.email || "paulo@devflow.io";
+  const initials = displayName
+    .split(" ")
+    .map((part) => part.charAt(0))
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <aside
@@ -50,7 +66,7 @@ export function Sidebar() {
                   DevFlow
                 </h2>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
-                  Workspace
+                  {user?.role || "Workspace"}
                 </p>
               </div>
             )}
@@ -101,24 +117,36 @@ export function Sidebar() {
 
       <div className="border-t border-zinc-200 pt-3 dark:border-zinc-800">
         <div
-          className={`flex items-center rounded-lg py-1.5 transition-colors cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-900 ${
-            isCollapsed ? "justify-center px-1" : "gap-3 px-2"
+          className={`flex items-center justify-between rounded-lg py-1.5 transition-colors ${
+            isCollapsed ? "flex-col gap-2 px-1" : "gap-2 px-2"
           }`}
-          title={isCollapsed ? "Paulo Developer (paulo@devflow.io)" : undefined}
+          title={isCollapsed ? `${displayName} (${displayEmail})` : undefined}
         >
-          <div className="h-8 w-8 shrink-0 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-semibold text-xs flex items-center justify-center border border-emerald-500/30">
-            DF
-          </div>
-          {!isCollapsed && (
-            <div className="min-w-0 flex-1 overflow-hidden">
-              <p className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate">
-                Paulo Developer
-              </p>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
-                paulo@devflow.io
-              </p>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="h-8 w-8 shrink-0 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-semibold text-xs flex items-center justify-center border border-emerald-500/30">
+              {initials}
             </div>
-          )}
+            {!isCollapsed && (
+              <div className="min-w-0 flex-1 overflow-hidden">
+                <p className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                  {displayName}
+                </p>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
+                  {displayEmail}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <form action={logoutAction}>
+            <button
+              type="submit"
+              title="Sair da conta"
+              className="rounded-lg p-1.5 text-zinc-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/60 dark:hover:text-red-400 transition-colors cursor-pointer"
+            >
+              <LogoutIcon className="h-4 w-4" />
+            </button>
+          </form>
         </div>
       </div>
     </aside>
