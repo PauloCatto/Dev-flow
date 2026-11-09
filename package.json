@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "db:push": "prisma db push",
+    "db:push": "prisma db push --skip-generate",
     "db:studio": "prisma studio"
   },
   "dependencies": {

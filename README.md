@@ -72,15 +72,17 @@ devflow/
   - Alternância instantânea entre modo Claro, Escuro e Automático (Sistema).
   - Configuração nativa com `@custom-variant dark` no Tailwind CSS v4 e persistência em `localStorage`.
 - [x] **Backend & Banco de Dados Relacional (SQLite + Prisma ORM):**
-  - Esquema relacional `Project` e `Task` com `ON DELETE CASCADE` em `prisma/schema.prisma`.
+  - Esquema relacional `User`, `Project` e `Task` com `ON DELETE CASCADE` em `prisma/schema.prisma`.
   - Server Actions (`"use server"`) em `app/actions/devflow.ts` com *seed* automático inicial, sincronização de contadores e `revalidatePath`.
   - Atualização otimista (*Optimistic UI*) combinada com persistência SQL no servidor.
+- [x] **Autenticação, Cadastro e Proteção de Rotas (`/login` e `/register`):**
+  - Fluxo completo de Login, Cadastro e Logout com `useActionState` (React 19), hash de senha `scrypt` e sessão em cookie `httpOnly` assinado (HMAC-SHA256).
+  - Conta demo pré-configurada (`paulo@devflow.io` / `123456`) e proteção automática das rotas do `(dashboard)`.
 
 ---
 
 ## 🗺️ Roadmap de Evolução
 
-- [ ] **Autenticação e Permissões:** Login, sessões e proteção de rotas com Auth.js / NextAuth.
 - [ ] **Testes Automatizados:** Testes unitários, de componentes e E2E (Vitest / Playwright).
 - [ ] **Deploy e Produção:** Deploy automatizado e conexão com banco cloud na Vercel.
 
@@ -119,4 +121,5 @@ Para detalhes aprofundados sobre decisões de arquitetura, comparações técnic
 * [`docs/05-kanban-drag-and-drop-e-context-api.md`](./docs/05-kanban-drag-and-drop-e-context-api.md)
 * [`docs/06-rotas-dinamicas-edicao-e-eslint.md`](./docs/06-rotas-dinamicas-edicao-e-eslint.md)
 * [`docs/07-sqlite-prisma-e-server-actions.md`](./docs/07-sqlite-prisma-e-server-actions.md)
+* [`docs/08-autenticacao-sessoes-e-protecao-de-rotas.md`](./docs/08-autenticacao-sessoes-e-protecao-de-rotas.md)
 
