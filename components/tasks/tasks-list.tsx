@@ -153,18 +153,31 @@ export function TasksList() {
               <CheckIcon className="h-6 w-6" />
             </div>
             <h3 className="mt-4 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Nenhuma tarefa encontrada
+              {projects.length === 0
+                ? "Crie um projeto antes de adicionar tarefas"
+                : "Nenhuma tarefa encontrada"}
             </h3>
             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 max-w-sm">
-              Não há tarefas correspondentes aos filtros selecionados. Experimente limpar os filtros ou crie uma nova tarefa.
+              {projects.length === 0
+                ? "Toda tarefa precisa pertencer a um projeto. Cadastre um projeto para começar a criar e gerenciar tarefas."
+                : "Não há tarefas correspondentes aos filtros selecionados. Experimente limpar os filtros ou crie uma nova tarefa."}
             </p>
-            <button
-              type="button"
-              onClick={() => openCreateTaskModal("todo")}
-              className="mt-4 rounded-lg bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500 transition-colors cursor-pointer"
-            >
-              + Criar Tarefa
-            </button>
+            {projects.length === 0 ? (
+              <Link
+                href="/projects"
+                className="mt-4 rounded-lg bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500 transition-colors"
+              >
+                + Criar Projeto
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => openCreateTaskModal("todo")}
+                className="mt-4 rounded-lg bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500 transition-colors cursor-pointer"
+              >
+                + Criar Tarefa
+              </button>
+            )}
           </div>
         ) : (
           <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">

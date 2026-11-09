@@ -12,7 +12,15 @@ interface HeaderProps {
 
 export function Header({ title = "Visão Geral" }: HeaderProps) {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
-  const { resolvedTheme, toggleTheme, openCreateTaskModal } = useDevFlow();
+  const { resolvedTheme, toggleTheme, openCreateTaskModal, currentUser } = useDevFlow();
+  const workspaceSlug = currentUser?.name
+    ? `${currentUser.name
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")}-workspace`
+    : "workspace-principal";
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -34,7 +42,7 @@ export function Header({ title = "Visão Geral" }: HeaderProps) {
             {title}
           </h1>
           <span className="hidden sm:inline-block rounded-md bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 font-mono dark:bg-zinc-800 dark:text-zinc-400">
-            workspace-principal
+            {workspaceSlug}
           </span>
         </div>
 

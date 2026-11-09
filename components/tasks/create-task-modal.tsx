@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useDevFlow } from "@/context/devflow-context";
 import { TaskPriority, TaskStatus } from "@/types";
 import { KANBAN_COLUMNS } from "@/lib/constants";
-import { CloseIcon } from "@/components/icons";
+import { CloseIcon, ProjectsIcon, PlusIcon } from "@/components/icons";
 
 export function CreateTaskModal() {
   const { isTaskModalOpen, editingTask, defaultTaskStatus, defaultTaskProjectId } =
@@ -25,6 +26,7 @@ export function CreateTaskModal() {
 
 function TaskModalContent() {
   const {
+    currentUser,
     defaultTaskStatus,
     defaultTaskProjectId,
     editingTask,
@@ -33,6 +35,8 @@ function TaskModalContent() {
     updateTask,
     projects,
   } = useDevFlow();
+
+  const defaultAssignee = currentUser?.name || "Paulo Developer";
 
   const [title, setTitle] = useState(editingTask?.title ?? "");
   const [description, setDescription] = useState(editingTask?.description ?? "");
@@ -48,7 +52,7 @@ function TaskModalContent() {
     editingTask?.priority ?? "media"
   );
   const [assigneeName, setAssigneeName] = useState(
-    editingTask?.assignee.name ?? "Paulo Developer"
+    editingTask?.assignee.name ?? defaultAssignee
   );
   const [dueDate, setDueDate] = useState(editingTask?.dueDate ?? "Em 3 dias");
   const [error, setError] = useState("");
@@ -65,6 +69,57 @@ function TaskModalContent() {
 
   const isEditing = Boolean(editingTask);
 
+  if (projects.length === 0 && !isEditing) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-200">
+        <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex items-center justify-between pb-4 border-b border-zinc-100 dark:border-zinc-800">
+            <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+              Projeto Obrigatório
+            </h2>
+            <button
+              type="button"
+              onClick={closeCreateTaskModal}
+              className="rounded-lg p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-200 cursor-pointer"
+            >
+              <CloseIcon className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="py-6 flex flex-col items-center text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
+              <ProjectsIcon className="h-6 w-6" />
+            </div>
+            <h3 className="mt-4 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Nenhum projeto encontrado
+            </h3>
+            <p className="mt-1.5 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Toda tarefa precisa estar vinculada a um projeto. Cadastre um projeto primeiro para liberar a criação de tarefas e o uso do Kanban.
+            </p>
+          </div>
+
+          <div className="pt-4 flex items-center justify-end gap-3 border-t border-zinc-100 dark:border-zinc-800">
+            <button
+              type="button"
+              onClick={closeCreateTaskModal}
+              className="rounded-lg border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <Link
+              href="/projects"
+              onClick={closeCreateTaskModal}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-emerald-500 transition-colors"
+            >
+              <PlusIcon className="h-3.5 w-3.5" />
+              Ir para Projetos
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -73,8 +128,11 @@ function TaskModalContent() {
       return;
     }
 
-    const selectedProjectId =
-      projectId || (projects.length > 0 ? projects[0].id : "1");
+    const selectedProjectId = projectId || (projects.length > 0 ? projects[0].id : "");
+    if (!selectedProjectId) {
+      setError("Selecione um projeto válido para vincular a tarefa.");
+      return;
+    }
 
     if (editingTask) {
       updateTask(editingTask.id, {
@@ -84,7 +142,7 @@ function TaskModalContent() {
         status,
         priority,
         assignee: {
-          name: assigneeName.trim() || "Paulo Developer",
+          name: assigneeName.trim() || defaultAssignee,
         },
         dueDate: dueDate.trim() || "Sem prazo",
       });
@@ -96,7 +154,7 @@ function TaskModalContent() {
         status,
         priority,
         assignee: {
-          name: assigneeName.trim() || "Paulo Developer",
+          name: assigneeName.trim() || defaultAssignee,
         },
         dueDate: dueDate.trim() || "Sem prazo",
       });
@@ -152,7 +210,7 @@ function TaskModalContent() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                Projeto
+                Projeto *
               </label>
               <select
                 value={projectId}

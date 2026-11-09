@@ -157,18 +157,30 @@ export function ProjectsList({}: ProjectsListProps) {
               <SearchIcon className="h-6 w-6" />
             </div>
             <h3 className="mt-4 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Nenhum projeto encontrado
+              {searchQuery ? "Nenhum projeto encontrado" : "Nenhum projeto cadastrado"}
             </h3>
             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 max-w-sm">
-              Não encontramos resultados para &ldquo;{searchQuery}&rdquo;. Tente buscar por outros termos ou limpe o filtro atual.
+              {searchQuery
+                ? `Não encontramos resultados para "${searchQuery}". Tente buscar por outros termos ou limpe o filtro atual.`
+                : "Cadastre um projeto para organizar suas sprints, criar tarefas e acompanhar o progresso da equipe."}
             </p>
-            <button
-              type="button"
-              onClick={clearSearch}
-              className="mt-4 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-            >
-              Limpar busca
-            </button>
+            {searchQuery ? (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="mt-4 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+              >
+                Limpar busca
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleOpenCreate}
+                className="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-500 transition-colors cursor-pointer"
+              >
+                + Criar Primeiro Projeto
+              </button>
+            )}
           </div>
         ) : (
           <table className="min-w-full divide-y divide-zinc-200 text-left text-xs dark:divide-zinc-800">

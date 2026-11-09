@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Project, ProjectStatus } from "@/types";
+import { useDevFlow } from "@/context/devflow-context";
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -33,10 +34,13 @@ function ProjectModalContent({
   initialProject,
   onUpdateProject,
 }: CreateProjectModalProps) {
+  const { currentUser } = useDevFlow();
+  const defaultLead = currentUser?.name || "Paulo Developer";
+
   const [name, setName] = useState(initialProject?.name ?? "");
   const [key, setKey] = useState(initialProject?.key ?? "");
   const [description, setDescription] = useState(initialProject?.description ?? "");
-  const [lead, setLead] = useState(initialProject?.lead ?? "Paulo Developer");
+  const [lead, setLead] = useState(initialProject?.lead ?? defaultLead);
   const [status, setStatus] = useState<ProjectStatus>(
     initialProject?.status ?? "Ativo"
   );
@@ -75,7 +79,7 @@ function ProjectModalContent({
         name: name.trim(),
         key: key.trim().toUpperCase(),
         description: description.trim() || "Sem descrição informada.",
-        lead: lead.trim() || "Paulo Developer",
+        lead: lead.trim() || defaultLead,
         status,
       });
     } else {
@@ -83,7 +87,7 @@ function ProjectModalContent({
         name: name.trim(),
         key: key.trim().toUpperCase(),
         description: description.trim() || "Sem descrição informada.",
-        lead: lead.trim() || "Paulo Developer",
+        lead: lead.trim() || defaultLead,
         status,
       });
     }

@@ -8,8 +8,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { Project, Task, TaskStatus } from "@/types";
-import { MOCK_PROJECTS, MOCK_TASKS } from "@/lib/mock-data";
+import { AuthUser, Project, Task, TaskStatus } from "@/types";
 import {
   createProjectAction,
   updateProjectAction,
@@ -24,6 +23,8 @@ import {
 type ThemeMode = "light" | "dark" | "system";
 
 interface DevFlowContextType {
+  currentUser: AuthUser | null;
+
   theme: ThemeMode;
   resolvedTheme: "light" | "dark";
   setTheme: (theme: ThemeMode) => void;
@@ -68,14 +69,16 @@ const STORAGE_KEY_THEME = "devflow_theme_v1";
 
 interface DevFlowProviderProps {
   children: React.ReactNode;
+  currentUser?: AuthUser | null;
   initialProjects?: Project[];
   initialTasks?: Task[];
 }
 
 export function DevFlowProvider({
   children,
-  initialProjects = MOCK_PROJECTS,
-  initialTasks = MOCK_TASKS,
+  currentUser = null,
+  initialProjects = [],
+  initialTasks = [],
 }: DevFlowProviderProps) {
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
@@ -401,6 +404,7 @@ export function DevFlowProvider({
 
   const value = useMemo(
     () => ({
+      currentUser,
       theme,
       resolvedTheme,
       setTheme,
@@ -427,6 +431,7 @@ export function DevFlowProvider({
       closeCreateProjectModal,
     }),
     [
+      currentUser,
       theme,
       resolvedTheme,
       setTheme,
